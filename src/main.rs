@@ -1,3 +1,4 @@
+mod resources;
 mod state;
 
 fn main() {
