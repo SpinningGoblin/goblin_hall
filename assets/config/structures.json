@@ -1,0 +1,92 @@
+[
+  {
+    "key": "room_wall",
+    "layer_type": {
+      "TopDownMap": "room_wall"
+    },
+    "health": 22,
+    "health_configs": [
+      {
+        "sprite": {
+          "key": "full_health",
+          "path": "sprites/structures/brick_wall.png"
+        },
+        "health_range": {
+          "min": 17,
+          "max": 22
+        },
+        "can_be_broken": true,
+        "can_be_walked_on": false
+      },
+      {
+        "sprite": {
+          "key": "minor_crack",
+          "path": "sprites/structures/brick_wall_minor_cracked.png"
+        },
+        "health_range": {
+          "min": 12,
+          "max": 16
+        },
+        "can_be_broken": true,
+        "can_be_walked_on": false
+      },
+      {
+        "sprite": {
+          "key": "cracked",
+          "path": "sprites/structures/brick_wall_cracked.png"
+        },
+        "health_range": {
+          "min": 7,
+          "max": 11
+        },
+        "can_be_broken": true,
+        "can_be_walked_on": false
+      },
+      {
+        "sprite": {
+          "key": "really_cracked",
+          "path": "sprites/structures/brick_wall_really_cracked.png"
+        },
+        "health_range": {
+          "min": 1,
+          "max": 6
+        },
+        "can_be_broken": true,
+        "can_be_walked_on": false
+      },
+      {
+        "sprite": {
+          "key": "broken",
+          "path": "sprites/structures/broken_wall.png"
+        },
+        "health_range": {
+          "min": -99,
+          "max": 0
+        },
+        "can_be_broken": false,
+        "can_be_walked_on": true
+      }
+    ]
+  },
+  {
+    "key": "outer_wall",
+    "layer_type": {
+      "TopDownMap": "outer_wall"
+    },
+    "health": 1000,
+    "health_configs": [
+      {
+        "sprite": {
+          "key": "full_health",
+          "path": "sprites/structures/wall.png"
+        },
+        "health_range": {
+          "min": 0,
+          "max": 1000
+        },
+        "can_be_broken": false,
+        "can_be_walked_on": false
+      }
+    ]
+  }
+]

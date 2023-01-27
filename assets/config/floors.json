@@ -1,0 +1,66 @@
+[
+  {
+    "key": "dirt_floor",
+    "layer_type": {
+      "TopDownMap": "room_floor"
+    },
+    "sprites": [
+      {
+        "key": "dirt_floor_1",
+        "path": "sprites/floors/dirt_floor_1.png"
+      },
+      {
+        "key": "dirt_floor_2",
+        "path": "sprites/floors/dirt_floor_2.png"
+      },
+      {
+        "key": "dirt_floor_3",
+        "path": "sprites/floors/dirt_floor_3.png"
+      }
+    ]
+  },
+  {
+    "key": "cave_floor",
+    "layer_type": {
+      "TopDownMap": "floor"
+    },
+    "sprites": [
+      {
+        "key": "cave_floor_1",
+        "path": "sprites/floors/purple_1.png"
+      },
+      {
+        "key": "cave_floor_2",
+        "path": "sprites/floors/purple_2.png"
+      },
+      {
+        "key": "cave_floor_3",
+        "path": "sprites/floors/purple_3.png"
+      },
+      {
+        "key": "cave_floor_4",
+        "path": "sprites/floors/purple_4.png"
+      },
+      {
+        "key": "cave_floor_5",
+        "path": "sprites/floors/purple_5.png"
+      }
+    ]
+  },
+  {
+    "key": "sand_floor",
+    "layer_type": {
+      "TopDownMap": "room_floor"
+    },
+    "sprites": [
+      {
+        "key": "sand_floor_1",
+        "path": "sprites/floors/sand_1.png"
+      },
+      {
+        "key": "sand_floor_2",
+        "path": "sprites/floors/sand_2.png"
+      }
+    ]
+  }
+]

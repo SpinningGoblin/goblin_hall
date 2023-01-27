@@ -1,0 +1,11 @@
+{
+  "tiles": {
+    "size": 32.0,
+    "scale": 1.0
+  },
+  "grid_generation": {
+    "size": 100,
+    "target_num_rooms": 15,
+    "seed": "goblin tavern hall"
+  }
+}
