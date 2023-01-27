@@ -52,7 +52,7 @@ impl GameConfiguration {
 
     pub fn random_floor_sprite(&self, key: &str) -> Option<&SingleSprite> {
         self.floor_sprites.iter().find_map(|sprite_group| {
-            if sprite_group.key.eq(key) && sprite_group.sprites.len() > 0 {
+            if sprite_group.key.eq(key) && !sprite_group.sprites.is_empty() {
                 let mut rng = rand::thread_rng();
                 let index = rng.gen_range(0..sprite_group.sprites.len());
                 sprite_group.sprites.get(index)
