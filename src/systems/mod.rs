@@ -1,3 +1,4 @@
+pub mod camera;
 mod startup;
 pub mod textures;
 

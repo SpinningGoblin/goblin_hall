@@ -23,6 +23,10 @@ fn main() {
         .add_system(close_on_esc)
         .add_system_set(SystemSet::on_enter(AppState::Startup).with_system(textures::load))
         .add_system_set(SystemSet::on_update(AppState::Startup).with_system(textures::check))
-        .add_system_set(SystemSet::on_enter(AppState::InGame).with_system(startup))
+        .add_system_set(
+            SystemSet::on_enter(AppState::InGame)
+                .with_system(startup)
+                .with_system(systems::camera::spawn_camera),
+        )
         .run();
 }

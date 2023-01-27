@@ -1,8 +1,5 @@
 use bevy::{
-    prelude::{
-        default, warn, AssetServer, Assets, Camera2dBundle, Commands, Image, Res, ResMut,
-        Transform, Vec3,
-    },
+    prelude::{default, warn, AssetServer, Assets, Commands, Image, Res, ResMut, Transform, Vec3},
     sprite::{SpriteSheetBundle, TextureAtlas, TextureAtlasBuilder, TextureAtlasSprite},
 };
 use tdlg::map::cells::LayerType;
@@ -33,12 +30,6 @@ pub fn startup(
 
     let texture_atlas = texture_atlas_builder.finish(&mut textures).unwrap();
     let atlas_handle = texture_atlases.add(texture_atlas.clone());
-
-    let mut camera = Camera2dBundle::default();
-    camera.transform.scale = Vec3::splat(2.0);
-
-    // set up a scene to display our texture atlas
-    commands.spawn(camera);
 
     let top_down_map = game_config.generate_top_down_map();
     for cell in top_down_map.grid().cells() {
