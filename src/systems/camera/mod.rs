@@ -1,3 +1,3 @@
-mod camera_startup;
+mod startup;
 
-pub use camera_startup::spawn_camera;
+pub use startup::spawn_camera;
