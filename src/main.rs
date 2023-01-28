@@ -1,13 +1,15 @@
 use bevy::{
-    prelude::{App, ImagePlugin, PluginGroup, SystemSet},
+    prelude::{App, ImagePlugin, IntoSystemDescriptor, PluginGroup, SystemSet},
     window::close_on_esc,
     DefaultPlugins,
 };
+use labels::Label;
 use resources::sprites::Handles;
 use state::AppState;
 use systems::{startup, textures};
 
 mod components;
+mod labels;
 mod resources;
 mod state;
 mod systems;
@@ -27,6 +29,15 @@ fn main() {
             SystemSet::on_enter(AppState::InGame)
                 .with_system(startup)
                 .with_system(systems::camera::spawn_camera),
+        )
+        .add_system_set(
+            SystemSet::on_update(AppState::InGame)
+                .with_system(systems::camera::process_input.label(Label::CameraMovementInput))
+                .with_system(
+                    systems::camera::move_camera
+                        .label(Label::CameraMovement)
+                        .after(Label::CameraMovementInput),
+                ),
         )
         .run();
 }
