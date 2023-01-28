@@ -4,8 +4,16 @@
     "scale": 1.0
   },
   "grid_generation": {
-    "size": 100,
-    "target_num_rooms": 15,
+    "size": 200,
+    "target_num_rooms": 50,
     "seed": "goblin tavern hall"
+  },
+  "movement": {
+    "timer": {
+      "wait_time": 0.2
+    },
+    "speed": {
+      "camera_modifier": 4.0
+    }
   }
 }

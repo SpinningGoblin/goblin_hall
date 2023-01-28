@@ -1,11 +1,13 @@
-use std::num::NonZeroU16;
+use std::{num::NonZeroU16, time::Duration};
 
-use bevy::prelude::Resource;
+use bevy::{prelude::Resource, time::Timer};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use tdlg::{generation::Generator, map::TopDownMap};
 
-use super::{SingleSprite, SpriteGroup, SpriteTileStats, StructureConfig};
+use super::{
+    MovementConfig, MovementTimer, SingleSprite, SpriteGroup, SpriteTileStats, StructureConfig,
+};
 
 #[derive(Debug, Resource)]
 pub struct GameConfiguration {
@@ -13,6 +15,7 @@ pub struct GameConfiguration {
     pub floor_sprites: Vec<SpriteGroup>,
     pub structures: Vec<StructureConfig>,
     generator: Generator,
+    movement_timer: MovementTimer,
 }
 
 impl GameConfiguration {
@@ -27,10 +30,11 @@ impl GameConfiguration {
             .target_number_rooms(basics.grid_generation.target_num_rooms)
             .build();
         Self {
-            basics,
             floor_sprites,
             generator,
             structures,
+            movement_timer: basics.movement_timer(),
+            basics,
         }
     }
 
@@ -48,6 +52,18 @@ impl GameConfiguration {
 
     pub fn generate_top_down_map(&mut self) -> TopDownMap {
         self.generator.generate_top_down_map().unwrap()
+    }
+
+    pub fn reset_movement_timer(&mut self) {
+        self.movement_timer.0.reset();
+    }
+
+    pub fn tick_movement_timer(&mut self, delta: Duration) -> &Timer {
+        self.movement_timer.0.tick(delta)
+    }
+
+    pub fn camera_movement_modifier(&self) -> f32 {
+        self.basics.movement.speed.camera_modifier
     }
 
     pub fn random_floor_sprite(&self, key: &str) -> Option<&SingleSprite> {
@@ -73,6 +89,13 @@ impl GameConfiguration {
 pub struct GameBasics {
     tiles: SpriteTileStats,
     grid_generation: GridGeneration,
+    movement: MovementConfig,
+}
+
+impl GameBasics {
+    pub fn movement_timer(&self) -> MovementTimer {
+        self.movement.movement_timer()
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Resource, Serialize)]
@@ -86,7 +109,9 @@ pub struct GridGeneration {
 mod tests {
     use std::num::NonZeroU16;
 
-    use crate::resources::config::{game::GridGeneration, SpriteTileStats};
+    use crate::resources::config::{
+        game::GridGeneration, MovementConfig, MovementTimerConfig, SpeedConfig, SpriteTileStats,
+    };
 
     use super::GameBasics;
 
@@ -101,6 +126,12 @@ mod tests {
                 size: NonZeroU16::new(20).unwrap(),
                 target_num_rooms: NonZeroU16::new(20).unwrap(),
                 seed: "test".to_string(),
+            },
+            movement: MovementConfig {
+                timer: MovementTimerConfig { wait_time: 0.2 },
+                speed: SpeedConfig {
+                    camera_modifier: 2.0,
+                },
             },
         };
 
