@@ -8,7 +8,7 @@ pub fn spawn_camera(mut commands: Commands, query: Query<&GameCamera>) {
     }
 
     let mut camera = Camera2dBundle::default();
-    camera.transform.scale = Vec3::splat(2.0);
+    camera.transform.scale = Vec3::new(2.0, 2.0, 1.0);
 
     // set up a scene to display our texture atlas
     commands

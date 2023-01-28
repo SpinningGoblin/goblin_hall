@@ -39,7 +39,8 @@ fn main() {
                     systems::camera::move_camera
                         .label(Label::CameraMovement)
                         .after(Label::CameraMovementInput),
-                ),
+                )
+                .with_system(systems::camera::zoom_camera),
         )
         .run();
 }
