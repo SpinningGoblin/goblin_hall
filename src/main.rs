@@ -32,7 +32,9 @@ fn main() {
         )
         .add_system_set(
             SystemSet::on_update(AppState::InGame)
-                .with_system(systems::camera::process_input.label(Label::CameraMovementInput))
+                .with_system(
+                    systems::camera::process_movement_input.label(Label::CameraMovementInput),
+                )
                 .with_system(
                     systems::camera::move_camera
                         .label(Label::CameraMovement)

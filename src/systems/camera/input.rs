@@ -13,7 +13,7 @@ use crate::{
 
 use super::speed::{x_axis_speed, y_axis_speed};
 
-pub fn process_input(
+pub fn process_movement_input(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&GameCamera, &mut CameraMovement)>,
