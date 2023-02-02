@@ -129,10 +129,40 @@ pub fn startup(
                     }
                 }
                 LayerType::Rubble => {
-                    println!("rubble {} {:?}", index, &cell.coordinate());
+                    if let Some(structure_config) = game_config.structure_config_by_key("rubble") {
+                        if let Some(wall_sprite) = structure_config.max_health_sprite() {
+                            let handle = asset_server.get_handle(&wall_sprite.path);
+                            let texture_index = texture_atlas.get_texture_index(&handle).unwrap();
+                            commands.spawn(SpriteSheetBundle {
+                                transform: Transform {
+                                    translation: position,
+                                    scale: Vec3::splat(game_config.tile_scale()),
+                                    ..default()
+                                },
+                                sprite: TextureAtlasSprite::new(texture_index),
+                                texture_atlas: atlas_handle.clone(),
+                                ..default()
+                            });
+                        }
+                    }
                 }
                 LayerType::Table => {
-                    println!("Table {} {:?}", index, &cell.coordinate());
+                    if let Some(structure_config) = game_config.structure_config_by_key("table") {
+                        if let Some(wall_sprite) = structure_config.max_health_sprite() {
+                            let handle = asset_server.get_handle(&wall_sprite.path);
+                            let texture_index = texture_atlas.get_texture_index(&handle).unwrap();
+                            commands.spawn(SpriteSheetBundle {
+                                transform: Transform {
+                                    translation: position,
+                                    scale: Vec3::splat(game_config.tile_scale()),
+                                    ..default()
+                                },
+                                sprite: TextureAtlasSprite::new(texture_index),
+                                texture_atlas: atlas_handle.clone(),
+                                ..default()
+                            });
+                        }
+                    }
                 }
                 LayerType::Note => {
                     println!("Note {} {:?}", index, &cell.coordinate());

@@ -88,5 +88,59 @@
         "can_be_walked_on": false
       }
     ]
+  },
+  {
+    "key": "rubble",
+    "layer_type": {
+      "TopDownMap": "rubble"
+    },
+    "health": 1000,
+    "health_configs": [
+      {
+        "sprite": {
+          "key": "full_health",
+          "path": "sprites/structures/broken_wall.png"
+        },
+        "health_range": {
+          "min": 0,
+          "max": 1000
+        },
+        "can_be_broken": false,
+        "can_be_walked_on": true
+      }
+    ]
+  },
+  {
+    "key": "table",
+    "layer_type": {
+      "TopDownMap": "table"
+    },
+    "health": 3,
+    "health_configs": [
+      {
+        "sprite": {
+          "key": "full_health",
+          "path": "sprites/structures/small_table.png"
+        },
+        "health_range": {
+          "min": 1,
+          "max": 3
+        },
+        "can_be_broken": true,
+        "can_be_walked_on": false
+      },
+      {
+        "sprite": {
+          "key": "broken",
+          "path": "sprites/structures/broken_small_table.png"
+        },
+        "health_range": {
+          "min": -99,
+          "max": 0
+        },
+        "can_be_broken": false,
+        "can_be_walked_on": true
+      }
+    ]
   }
 ]
