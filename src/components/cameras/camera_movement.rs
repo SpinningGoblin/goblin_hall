@@ -1,6 +1,6 @@
 use bevy::prelude::Component;
 
-use super::{Direction, Speed};
+use crate::components::movement::{Direction, Speed};
 
 #[derive(Debug, Clone, Component, Default)]
 pub struct CameraMovement {

@@ -1,6 +1,6 @@
 use bevy::prelude::{Mut, Query, Transform};
 
-use crate::components::{cameras::GameCamera, movement::CameraMovement};
+use crate::components::cameras::{CameraMovement, GameCamera};
 
 pub fn move_camera(mut query: Query<(&GameCamera, &CameraMovement, &mut Transform)>) {
     if query.is_empty() {

@@ -1,7 +1,7 @@
 use bevy::prelude::{Camera2dBundle, Commands, Query, Res};
 
 use crate::{
-    components::{cameras::GameCamera, movement::CameraMovement},
+    components::cameras::{CameraMovement, GameCamera},
     resources::config::GameConfiguration,
 };
 

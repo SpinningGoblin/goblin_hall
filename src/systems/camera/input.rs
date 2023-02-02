@@ -5,8 +5,8 @@ use bevy::{
 
 use crate::{
     components::{
-        cameras::GameCamera,
-        movement::{CameraMovement, Direction},
+        cameras::{CameraMovement, GameCamera},
+        movement::Direction,
     },
     resources::config::GameConfiguration,
 };
