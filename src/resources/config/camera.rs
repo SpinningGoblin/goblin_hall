@@ -14,7 +14,6 @@ impl CameraConfig {
             .iter()
             .find(|zoom_level| zoom_level.order == self.initial_zoom_level)
             .map(|zoom_level| zoom_level.scale)
-            .clone()
             .unwrap_or(Vec3::splat(1.0))
     }
 
@@ -28,7 +27,7 @@ impl CameraConfig {
         if let Some(current_order) = self
             .zoom_levels
             .iter()
-            .find(|zoom_level| zoom_level.scale.eq(&current))
+            .find(|zoom_level| zoom_level.scale.eq(current))
             .map(|zoom_level| zoom_level.order)
         {
             if current_order == max_order {
@@ -36,13 +35,11 @@ impl CameraConfig {
                     .iter()
                     .min_by_key(|zoom_level| zoom_level.order)
                     .map(|zoom_level| zoom_level.scale)
-                    .clone()
             } else {
                 self.zoom_levels
                     .iter()
                     .find(|zoom_level| zoom_level.order == current_order + 1)
                     .map(|zoom_level| zoom_level.scale)
-                    .clone()
             }
         } else {
             None
@@ -59,7 +56,7 @@ impl CameraConfig {
         if let Some(current_order) = self
             .zoom_levels
             .iter()
-            .find(|zoom_level| zoom_level.scale.eq(&current))
+            .find(|zoom_level| zoom_level.scale.eq(current))
             .map(|zoom_level| zoom_level.order)
         {
             if current_order == min_order {
@@ -67,13 +64,11 @@ impl CameraConfig {
                     .iter()
                     .max_by_key(|zoom_level| zoom_level.order)
                     .map(|zoom_level| zoom_level.scale)
-                    .clone()
             } else {
                 self.zoom_levels
                     .iter()
                     .find(|zoom_level| zoom_level.order == current_order - 1)
                     .map(|zoom_level| zoom_level.scale)
-                    .clone()
             }
         } else {
             None
