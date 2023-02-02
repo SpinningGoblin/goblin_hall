@@ -1,12 +1,16 @@
 use std::{num::NonZeroU16, time::Duration};
 
-use bevy::{prelude::Resource, time::Timer};
+use bevy::{
+    prelude::{Resource, Vec3},
+    time::Timer,
+};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use tdlg::{generation::Generator, map::TopDownMap};
 
 use super::{
-    MovementConfig, MovementTimer, SingleSprite, SpriteGroup, SpriteTileStats, StructureConfig,
+    CameraConfig, MovementConfig, MovementTimer, SingleSprite, SpriteGroup, SpriteTileStats,
+    StructureConfig,
 };
 
 #[derive(Debug, Resource)]
@@ -63,7 +67,7 @@ impl GameConfiguration {
     }
 
     pub fn camera_movement_modifier(&self) -> f32 {
-        self.basics.movement.speed.camera_modifier
+        self.basics.camera.speed_modifier
     }
 
     pub fn random_floor_sprite(&self, key: &str) -> Option<&SingleSprite> {
@@ -83,6 +87,18 @@ impl GameConfiguration {
             .iter()
             .find(|structure_config| structure_config.key.eq(key))
     }
+
+    pub fn initial_camera_scale(&self) -> Vec3 {
+        self.basics.camera.initial_camera_scale()
+    }
+
+    pub fn zoom_out_level(&self, current: &Vec3) -> Option<Vec3> {
+        self.basics.camera.zoom_out_level(current)
+    }
+
+    pub fn zoom_in_level(&self, current: &Vec3) -> Option<Vec3> {
+        self.basics.camera.zoom_in_level(current)
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Resource, Serialize)]
@@ -90,6 +106,7 @@ pub struct GameBasics {
     tiles: SpriteTileStats,
     grid_generation: GridGeneration,
     movement: MovementConfig,
+    camera: CameraConfig,
 }
 
 impl GameBasics {
@@ -109,8 +126,11 @@ pub struct GridGeneration {
 mod tests {
     use std::num::NonZeroU16;
 
+    use bevy::prelude::Vec3;
+
     use crate::resources::config::{
-        game::GridGeneration, MovementConfig, MovementTimerConfig, SpeedConfig, SpriteTileStats,
+        game::GridGeneration, CameraConfig, MovementConfig, MovementTimerConfig, SpriteTileStats,
+        ZoomLevel,
     };
 
     use super::GameBasics;
@@ -129,13 +149,18 @@ mod tests {
             },
             movement: MovementConfig {
                 timer: MovementTimerConfig { wait_time: 0.2 },
-                speed: SpeedConfig {
-                    camera_modifier: 2.0,
-                },
+            },
+            camera: CameraConfig {
+                initial_zoom_level: 1,
+                speed_modifier: 4.0,
+                zoom_levels: vec![ZoomLevel {
+                    order: 1,
+                    scale: Vec3::splat(1.0),
+                }],
             },
         };
 
         let serialized = serde_json::to_string(&basics).unwrap();
-        assert_eq!("{\"tiles\":{\"size\":32.0,\"scale\":4.0},\"grid_generation\":{\"size\":20,\"target_num_rooms\":20,\"seed\":\"test\"},\"movement\":{\"timer\":{\"wait_time\":0.2},\"speed\":{\"camera_modifier\":2.0}}}", &serialized);
+        assert_eq!("{\"tiles\":{\"size\":32.0,\"scale\":4.0},\"grid_generation\":{\"size\":20,\"target_num_rooms\":20,\"seed\":\"test\"},\"movement\":{\"timer\":{\"wait_time\":0.2}},\"camera\":{\"initial_zoom_level\":1,\"speed_modifier\":4.0,\"zoom_levels\":[{\"order\":1,\"scale\":[1.0,1.0,1.0]}]}}", &serialized);
     }
 }
