@@ -99,6 +99,10 @@ impl GameConfiguration {
     pub fn zoom_in_level(&self, current: &Vec3) -> Option<Vec3> {
         self.basics.camera.zoom_in_level(current)
     }
+
+    pub fn mouse_target(&self) -> &SingleSprite {
+        &self.basics.mouse_target
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Resource, Serialize)]
@@ -107,6 +111,7 @@ pub struct GameBasics {
     grid_generation: GridGeneration,
     movement: MovementConfig,
     camera: CameraConfig,
+    mouse_target: SingleSprite,
 }
 
 impl GameBasics {
@@ -129,8 +134,8 @@ mod tests {
     use bevy::prelude::Vec3;
 
     use crate::resources::config::{
-        game::GridGeneration, CameraConfig, MovementConfig, MovementTimerConfig, SpriteTileStats,
-        ZoomLevel,
+        game::GridGeneration, CameraConfig, MovementConfig, MovementTimerConfig, SingleSprite,
+        SpriteTileStats, ZoomLevel,
     };
 
     use super::GameBasics;
@@ -158,9 +163,13 @@ mod tests {
                     scale: Vec3::splat(1.0),
                 }],
             },
+            mouse_target: SingleSprite {
+                key: "target".to_string(),
+                path: "outline.png".to_string(),
+            },
         };
 
         let serialized = serde_json::to_string(&basics).unwrap();
-        assert_eq!("{\"tiles\":{\"size\":32.0,\"scale\":4.0},\"grid_generation\":{\"size\":20,\"target_num_rooms\":20,\"seed\":\"test\"},\"movement\":{\"timer\":{\"wait_time\":0.2}},\"camera\":{\"initial_zoom_level\":1,\"speed_modifier\":4.0,\"zoom_levels\":[{\"order\":1,\"scale\":[1.0,1.0,1.0]}]}}", &serialized);
+        assert_eq!("{\"tiles\":{\"size\":32.0,\"scale\":4.0},\"grid_generation\":{\"size\":20,\"target_num_rooms\":20,\"seed\":\"test\"},\"movement\":{\"timer\":{\"wait_time\":0.2}},\"camera\":{\"initial_zoom_level\":1,\"speed_modifier\":4.0,\"zoom_levels\":[{\"order\":1,\"scale\":[1.0,1.0,1.0]}]},\"mouse_target\":{\"key\":\"target\",\"path\":\"outline.png\"}}", &serialized);
     }
 }

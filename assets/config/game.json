@@ -34,5 +34,9 @@
         "scale": [4.0, 4.0, 1.0]
       }
     ]
+  },
+  "mouse_target": {
+    "key": "target",
+    "path": "sprites/outline.png"
   }
 }
