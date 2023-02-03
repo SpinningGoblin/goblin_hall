@@ -40,7 +40,8 @@ fn main() {
                         .label(Label::CameraMovement)
                         .after(Label::CameraMovementInput),
                 )
-                .with_system(systems::camera::zoom_camera),
+                .with_system(systems::camera::zoom_camera)
+                .with_system(systems::mouse::move_mouse_target),
         )
         .run();
 }
