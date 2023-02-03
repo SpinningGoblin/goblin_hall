@@ -58,6 +58,7 @@ mod tests {
                 sprite: SingleSprite {
                     key: "basic".to_string(),
                     path: "/some/path/sprite.png".to_string(),
+                    tile_stats: None,
                 },
                 health_range: HealthRange { min: 0, max: 22 },
                 can_be_broken: false,
@@ -66,6 +67,6 @@ mod tests {
         };
 
         let serialized = serde_json::to_string(&config).unwrap();
-        assert_eq!("{\"key\":\"wall\",\"layer_type\":{\"TopDownMap\":\"room_wall\"},\"health\":22,\"health_configs\":[{\"sprite\":{\"key\":\"basic\",\"path\":\"/some/path/sprite.png\"},\"health_range\":{\"min\":0,\"max\":22},\"can_be_broken\":false,\"can_be_walked_on\":false}]}", &serialized);
+        assert_eq!("{\"key\":\"wall\",\"layer_type\":{\"TopDownMap\":\"room_wall\"},\"health\":22,\"health_configs\":[{\"sprite\":{\"key\":\"basic\",\"path\":\"/some/path/sprite.png\",\"tile_stats\":null},\"health_range\":{\"min\":0,\"max\":22},\"can_be_broken\":false,\"can_be_walked_on\":false}]}", &serialized);
     }
 }

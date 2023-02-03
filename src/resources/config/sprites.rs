@@ -13,12 +13,16 @@ pub struct SpriteGroup {
     pub key: String,
     pub layer_type: SpriteLayerType,
     pub sprites: Vec<SingleSprite>,
+    #[serde(default)]
+    pub tile_stats: Option<SpriteTileStats>,
 }
 
 #[derive(Clone, Debug, Deserialize, Resource, Serialize)]
 pub struct SingleSprite {
     pub key: String,
     pub path: String,
+    #[serde(default)]
+    pub tile_stats: Option<SpriteTileStats>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Resource, Serialize)]
@@ -37,10 +41,11 @@ mod tests {
         let single_sprite = SingleSprite {
             key: "floor".to_string(),
             path: "assets/floor/purple_1.png".to_string(),
+            tile_stats: None,
         };
         let serialized = serde_json::to_string(&single_sprite).unwrap();
         assert_eq!(
-            "{\"key\":\"floor\",\"path\":\"assets/floor/purple_1.png\"}",
+            "{\"key\":\"floor\",\"path\":\"assets/floor/purple_1.png\",\"tile_stats\":null}",
             serialized
         );
     }
@@ -53,10 +58,12 @@ mod tests {
             sprites: vec![SingleSprite {
                 key: "floor".to_string(),
                 path: "assets/floor/purple_1.png".to_string(),
+                tile_stats: None,
             }],
+            tile_stats: None,
         };
         let serialized = serde_json::to_string(&group).unwrap();
-        assert_eq!("{\"key\":\"purple floor\",\"layer_type\":{\"TopDownMap\":\"floor\"},\"sprites\":[{\"key\":\"floor\",\"path\":\"assets/floor/purple_1.png\"}]}", serialized);
+        assert_eq!("{\"key\":\"purple floor\",\"layer_type\":{\"TopDownMap\":\"floor\"},\"sprites\":[{\"key\":\"floor\",\"path\":\"assets/floor/purple_1.png\",\"tile_stats\":null}],\"tile_stats\":null}", serialized);
     }
 
     #[test]

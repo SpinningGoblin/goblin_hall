@@ -166,10 +166,11 @@ mod tests {
             mouse_target: SingleSprite {
                 key: "target".to_string(),
                 path: "outline.png".to_string(),
+                tile_stats: None,
             },
         };
 
         let serialized = serde_json::to_string(&basics).unwrap();
-        assert_eq!("{\"tiles\":{\"size\":32.0,\"scale\":4.0},\"grid_generation\":{\"size\":20,\"target_num_rooms\":20,\"seed\":\"test\"},\"movement\":{\"timer\":{\"wait_time\":0.2}},\"camera\":{\"initial_zoom_level\":1,\"speed_modifier\":4.0,\"zoom_levels\":[{\"order\":1,\"scale\":[1.0,1.0,1.0]}]},\"mouse_target\":{\"key\":\"target\",\"path\":\"outline.png\"}}", &serialized);
+        assert_eq!("{\"tiles\":{\"size\":32.0,\"scale\":4.0},\"grid_generation\":{\"size\":20,\"target_num_rooms\":20,\"seed\":\"test\"},\"movement\":{\"timer\":{\"wait_time\":0.2}},\"camera\":{\"initial_zoom_level\":1,\"speed_modifier\":4.0,\"zoom_levels\":[{\"order\":1,\"scale\":[1.0,1.0,1.0]}]},\"mouse_target\":{\"key\":\"target\",\"path\":\"outline.png\",\"tile_stats\":null}}", &serialized);
     }
 }
