@@ -1,12 +1,18 @@
 use bevy::{
-    prelude::{default, warn, AssetServer, Assets, Commands, Image, Res, ResMut, Transform, Vec3},
+    prelude::{
+        default, warn, AssetServer, Assets, Commands, Image, Res, ResMut, Transform, Vec3,
+        Visibility,
+    },
     sprite::{SpriteSheetBundle, TextureAtlas, TextureAtlasBuilder, TextureAtlasSprite},
 };
 use tdlg::map::cells::LayerType;
 
-use crate::resources::{
-    config::{grid::world_coordinate_from_grid, GameConfiguration},
-    sprites::Handles,
+use crate::{
+    components::target::MouseTarget,
+    resources::{
+        config::{grid::world_coordinate_from_grid, GameConfiguration},
+        sprites::Handles,
+    },
 };
 
 pub fn startup(
@@ -31,14 +37,30 @@ pub fn startup(
     let texture_atlas = texture_atlas_builder.finish(&mut textures).unwrap();
     let atlas_handle = texture_atlases.add(texture_atlas.clone());
 
+    let target_handle = asset_server.get_handle(&game_config.mouse_target().path);
+    let target_index = texture_atlas.get_texture_index(&target_handle).unwrap();
+    commands
+        .spawn(SpriteSheetBundle {
+            transform: Transform {
+                translation: Vec3::splat(10.0),
+                scale: Vec3::splat(game_config.tile_scale()),
+                ..default()
+            },
+            sprite: TextureAtlasSprite::new(target_index),
+            texture_atlas: atlas_handle.clone(),
+            visibility: Visibility { is_visible: false },
+            ..default()
+        })
+        .insert(MouseTarget);
+
     let top_down_map = game_config.generate_top_down_map();
     for cell in top_down_map.grid().cells() {
+        let coordinate = world_coordinate_from_grid(
+            cell.coordinate(),
+            game_config.grid_size().get(),
+            game_config.tile_size(),
+        );
         for (index, layer) in cell.layers().iter().enumerate() {
-            let coordinate = world_coordinate_from_grid(
-                cell.coordinate(),
-                game_config.grid_size().get(),
-                game_config.tile_size(),
-            );
             let position = Vec3::new(coordinate.x, coordinate.y, index as f32);
             match *layer {
                 LayerType::Floor => {
