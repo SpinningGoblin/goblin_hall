@@ -14,11 +14,11 @@ pub fn zoom_camera(
     let (_, mut transform): (&GameCamera, Mut<Transform>) = query.single_mut();
 
     if keyboard_input.just_pressed(KeyCode::Equals) {
-        if let Some(scale) = game_config.zoom_out_level(&transform.scale) {
+        if let Some(scale) = game_config.zoom_in_level(&transform.scale) {
             transform.scale = scale;
         }
     } else if keyboard_input.just_pressed(KeyCode::Minus) {
-        if let Some(scale) = game_config.zoom_in_level(&transform.scale) {
+        if let Some(scale) = game_config.zoom_out_level(&transform.scale) {
             transform.scale = scale;
         }
     }
