@@ -26,6 +26,31 @@ impl From<serde_json::Error> for LoadError {
     }
 }
 
+#[cfg(feature = "embedded")]
+pub fn game_json() -> &'static str {
+    include_str!("../../../assets/config/game.json")
+}
+
+#[cfg(feature = "embedded")]
+pub fn floors_json() -> &'static str {
+    include_str!("../../../assets/config/floors.json")
+}
+
+#[cfg(feature = "embedded")]
+pub fn structures_json() -> &'static str {
+    include_str!("../../../assets/config/structures.json")
+}
+
+#[cfg(feature = "embedded")]
+pub fn load_game_configuration() -> Result<GameConfiguration, LoadError> {
+    let basics: GameBasics = serde_json::from_str(game_json())?;
+    let floor_sprites: Vec<SpriteGroup> = serde_json::from_str(floors_json())?;
+    let structures: Vec<StructureConfig> = serde_json::from_str(structures_json())?;
+
+    Ok(GameConfiguration::new(basics, floor_sprites, structures))
+}
+
+#[cfg(not(feature = "embedded"))]
 pub fn load_game_configuration() -> Result<GameConfiguration, LoadError> {
     let basics_text = std::fs::read_to_string("./assets/config/game.json")?;
     let basics: GameBasics = serde_json::from_str(&basics_text)?;
