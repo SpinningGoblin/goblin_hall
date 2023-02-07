@@ -13,28 +13,6 @@
       "wait_time": 0.3
     }
   },
-  "camera": {
-    "initial_zoom_level": 2,
-    "speed_modifier": 4.0,
-    "zoom_levels": [
-      {
-        "order": 1,
-        "scale": [0.5, 0.5, 1.0]
-      },
-      {
-        "order": 2,
-        "scale": [1.0, 1.0, 1.0]
-      },
-      {
-        "order": 3,
-        "scale": [2.0, 2.0, 1.0]
-      },
-      {
-        "order": 4,
-        "scale": [4.0, 4.0, 1.0]
-      }
-    ]
-  },
   "mouse_target": {
     "key": "target",
     "path": "sprites/outline.png"

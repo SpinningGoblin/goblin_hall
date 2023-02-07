@@ -1,4 +1,5 @@
 mod camera;
+mod characters;
 mod game;
 pub mod grid;
 mod load;
@@ -8,6 +9,7 @@ mod structures;
 mod timers;
 
 pub use camera::{CameraConfig, ZoomLevel};
+pub use characters::CharacterConfig;
 pub use game::{GameBasics, GameConfiguration, GridGeneration};
 pub use load::{load_game_configuration, LoadError};
 pub use movement::MovementConfig;

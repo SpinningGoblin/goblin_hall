@@ -9,6 +9,12 @@ pub struct CameraConfig {
 }
 
 impl CameraConfig {
+    pub fn zoom_level(&self, scale: &Vec3) -> Option<&ZoomLevel> {
+        self.zoom_levels
+            .iter()
+            .find(|zoom_level| zoom_level.scale.eq(scale))
+    }
+
     pub fn initial_camera_scale(&self) -> Vec3 {
         self.zoom_levels
             .iter()
@@ -80,6 +86,8 @@ impl CameraConfig {
 pub struct ZoomLevel {
     pub order: u16,
     pub scale: Vec3,
+    #[serde(default)]
+    pub speed_modifier: Option<f32>,
 }
 
 #[cfg(test)]
@@ -96,6 +104,7 @@ mod tests {
             zoom_levels: vec![ZoomLevel {
                 order: 1,
                 scale: Vec3::splat(1.0),
+                speed_modifier: None,
             }],
         };
 

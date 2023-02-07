@@ -1,0 +1,29 @@
+{
+  "initial_zoom_level": 3,
+  "speed_modifier": 4.0,
+  "zoom_levels": [
+    {
+      "order": 1,
+      "speed_modifier": 1.0,
+      "scale": [0.2, 0.2, 1.0]
+    },
+    {
+      "order": 2,
+      "speed_modifier": 1.0,
+      "scale": [0.5, 0.5, 1.0]
+    },
+    {
+      "order": 3,
+      "speed_modifier": 1.0,
+      "scale": [1.0, 1.0, 1.0]
+    },
+    {
+      "order": 4,
+      "scale": [2.0, 2.0, 1.0]
+    },
+    {
+      "order": 5,
+      "scale": [4.0, 4.0, 1.0]
+    }
+  ]
+}

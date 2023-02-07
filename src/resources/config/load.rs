@@ -2,7 +2,7 @@ use std::io;
 
 use super::{
     game::{GameBasics, GameConfiguration},
-    SpriteGroup, StructureConfig,
+    CameraConfig, CharacterConfig, SpriteGroup, StructureConfig,
 };
 
 #[derive(Debug)]
@@ -42,12 +42,30 @@ pub fn structures_json() -> &'static str {
 }
 
 #[cfg(feature = "embedded")]
+pub fn characters_json() -> &'static str {
+    include_str!("../../../assets/config/characters.json")
+}
+
+#[cfg(feature = "embedded")]
+pub fn camera_json() -> &'static str {
+    include_str!("../../../assets/config/camera.json")
+}
+
+#[cfg(feature = "embedded")]
 pub fn load_game_configuration() -> Result<GameConfiguration, LoadError> {
     let basics: GameBasics = serde_json::from_str(game_json())?;
     let floor_sprites: Vec<SpriteGroup> = serde_json::from_str(floors_json())?;
     let structures: Vec<StructureConfig> = serde_json::from_str(structures_json())?;
+    let characters: Vec<CharacterConfig> = serde_json::from_str(characters_json())?;
+    let camera: CameraConfig = serde_json::from_str(camera_json())?;
 
-    Ok(GameConfiguration::new(basics, floor_sprites, structures))
+    Ok(GameConfiguration::new(
+        basics,
+        floor_sprites,
+        structures,
+        characters,
+        camera,
+    ))
 }
 
 #[cfg(not(feature = "embedded"))]
@@ -61,5 +79,17 @@ pub fn load_game_configuration() -> Result<GameConfiguration, LoadError> {
     let structures_text = std::fs::read_to_string("./assets/config/structures.json")?;
     let structures: Vec<StructureConfig> = serde_json::from_str(&structures_text)?;
 
-    Ok(GameConfiguration::new(basics, floor_sprites, structures))
+    let characters_text = std::fs::read_to_string("./assets/config/characters.json")?;
+    let characters: Vec<CharacterConfig> = serde_json::from_str(&characters_text)?;
+
+    let camera_text = std::fs::read_to_string("./assets/config/camera.json")?;
+    let camera: CameraConfig = serde_json::from_str(&camera_text)?;
+
+    Ok(GameConfiguration::new(
+        basics,
+        floor_sprites,
+        structures,
+        characters,
+        camera,
+    ))
 }

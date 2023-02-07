@@ -1,0 +1,9 @@
+[
+  {
+    "key": "little_goblin",
+    "sprite": {
+      "key": "goblin",
+      "path": "sprites/characters/little_goblin.png"
+    }
+  }
+]

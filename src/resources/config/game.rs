@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 use tdlg::{generation::Generator, map::TopDownMap};
 
 use super::{
-    CameraConfig, MovementConfig, MovementTimer, SingleSprite, SpriteGroup, SpriteTileStats,
-    StructureConfig,
+    CameraConfig, CharacterConfig, MovementConfig, MovementTimer, SingleSprite, SpriteGroup,
+    SpriteTileStats, StructureConfig,
 };
 
 #[derive(Debug, Resource)]
@@ -18,6 +18,8 @@ pub struct GameConfiguration {
     pub basics: GameBasics,
     pub floor_sprites: Vec<SpriteGroup>,
     pub structures: Vec<StructureConfig>,
+    pub characters: Vec<CharacterConfig>,
+    pub camera: CameraConfig,
     generator: Generator,
     movement_timer: MovementTimer,
 }
@@ -27,6 +29,8 @@ impl GameConfiguration {
         basics: GameBasics,
         floor_sprites: Vec<SpriteGroup>,
         structures: Vec<StructureConfig>,
+        characters: Vec<CharacterConfig>,
+        camera: CameraConfig,
     ) -> Self {
         let generator = tdlg::generation::builder()
             .seed(&basics.grid_generation.seed)
@@ -37,9 +41,15 @@ impl GameConfiguration {
             floor_sprites,
             generator,
             structures,
+            characters,
+            camera,
             movement_timer: basics.movement_timer(),
             basics,
         }
+    }
+
+    pub fn character_config(&self, key: &str) -> Option<&CharacterConfig> {
+        self.characters.iter().find(|config| config.key.eq(key))
     }
 
     pub fn tile_size(&self) -> f32 {
@@ -66,8 +76,11 @@ impl GameConfiguration {
         self.movement_timer.0.tick(delta)
     }
 
-    pub fn camera_movement_modifier(&self) -> f32 {
-        self.basics.camera.speed_modifier
+    pub fn camera_movement_modifier(&self, current_zoom: &Vec3) -> f32 {
+        self.camera
+            .zoom_level(current_zoom)
+            .and_then(|zoom_level| zoom_level.speed_modifier)
+            .unwrap_or(self.camera.speed_modifier)
     }
 
     pub fn random_floor_sprite(&self, key: &str) -> Option<&SingleSprite> {
@@ -89,15 +102,15 @@ impl GameConfiguration {
     }
 
     pub fn initial_camera_scale(&self) -> Vec3 {
-        self.basics.camera.initial_camera_scale()
+        self.camera.initial_camera_scale()
     }
 
     pub fn zoom_out_level(&self, current: &Vec3) -> Option<Vec3> {
-        self.basics.camera.zoom_out_level(current)
+        self.camera.zoom_out_level(current)
     }
 
     pub fn zoom_in_level(&self, current: &Vec3) -> Option<Vec3> {
-        self.basics.camera.zoom_in_level(current)
+        self.camera.zoom_in_level(current)
     }
 
     pub fn mouse_target(&self) -> &SingleSprite {
@@ -110,7 +123,6 @@ pub struct GameBasics {
     tiles: SpriteTileStats,
     grid_generation: GridGeneration,
     movement: MovementConfig,
-    camera: CameraConfig,
     mouse_target: SingleSprite,
 }
 
@@ -131,11 +143,8 @@ pub struct GridGeneration {
 mod tests {
     use std::num::NonZeroU16;
 
-    use bevy::prelude::Vec3;
-
     use crate::resources::config::{
-        game::GridGeneration, CameraConfig, MovementConfig, MovementTimerConfig, SingleSprite,
-        SpriteTileStats, ZoomLevel,
+        game::GridGeneration, MovementConfig, MovementTimerConfig, SingleSprite, SpriteTileStats,
     };
 
     use super::GameBasics;
@@ -154,14 +163,6 @@ mod tests {
             },
             movement: MovementConfig {
                 timer: MovementTimerConfig { wait_time: 0.2 },
-            },
-            camera: CameraConfig {
-                initial_zoom_level: 1,
-                speed_modifier: 4.0,
-                zoom_levels: vec![ZoomLevel {
-                    order: 1,
-                    scale: Vec3::splat(1.0),
-                }],
             },
             mouse_target: SingleSprite {
                 key: "target".to_string(),
