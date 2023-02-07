@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{Input, KeyCode, Mut, Query, Res, ResMut, Vec2},
+    prelude::{Input, KeyCode, Mut, Query, Res, ResMut, Transform, Vec2},
     time::Time,
 };
 
@@ -16,47 +16,38 @@ use super::speed::{x_axis_speed, y_axis_speed};
 pub fn process_movement_input(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&GameCamera, &mut CameraMovement)>,
+    mut query: Query<(&GameCamera, &mut CameraMovement, &Transform)>,
     mut game_config: ResMut<GameConfiguration>,
 ) {
     if query.is_empty() {
         return;
     }
 
-    let (_, mut movement): (&GameCamera, Mut<CameraMovement>) = query.single_mut();
+    let (_, mut movement, transform): (&GameCamera, Mut<CameraMovement>, &Transform) =
+        query.single_mut();
 
     movement.speed.current = Vec2::ZERO;
     movement.direction = None;
 
+    let speed_modifier = game_config.camera_movement_modifier(&transform.scale);
+
     if keyboard_input.just_pressed(KeyCode::Left) {
-        movement.speed.current -= x_axis_speed(
-            game_config.tile_size(),
-            game_config.camera_movement_modifier(),
-        );
+        movement.speed.current -= x_axis_speed(game_config.tile_size(), speed_modifier);
         movement.add_direction(Direction::West);
     }
 
     if keyboard_input.just_pressed(KeyCode::Right) {
-        movement.speed.current += x_axis_speed(
-            game_config.tile_size(),
-            game_config.camera_movement_modifier(),
-        );
+        movement.speed.current += x_axis_speed(game_config.tile_size(), speed_modifier);
         movement.add_direction(Direction::East);
     }
 
     if keyboard_input.just_pressed(KeyCode::Up) {
-        movement.speed.current += y_axis_speed(
-            game_config.tile_size(),
-            game_config.camera_movement_modifier(),
-        );
+        movement.speed.current += y_axis_speed(game_config.tile_size(), speed_modifier);
         movement.add_direction(Direction::North);
     }
 
     if keyboard_input.just_pressed(KeyCode::Down) {
-        movement.speed.current -= y_axis_speed(
-            game_config.tile_size(),
-            game_config.camera_movement_modifier(),
-        );
+        movement.speed.current -= y_axis_speed(game_config.tile_size(), speed_modifier);
         movement.add_direction(Direction::South);
     }
 
@@ -70,34 +61,22 @@ pub fn process_movement_input(
         .just_finished()
     {
         if keyboard_input.pressed(KeyCode::Left) {
-            movement.speed.current -= x_axis_speed(
-                game_config.tile_size(),
-                game_config.camera_movement_modifier(),
-            );
+            movement.speed.current -= x_axis_speed(game_config.tile_size(), speed_modifier);
             movement.add_direction(Direction::West);
         }
 
         if keyboard_input.pressed(KeyCode::Right) {
-            movement.speed.current += x_axis_speed(
-                game_config.tile_size(),
-                game_config.camera_movement_modifier(),
-            );
+            movement.speed.current += x_axis_speed(game_config.tile_size(), speed_modifier);
             movement.add_direction(Direction::East);
         }
 
         if keyboard_input.pressed(KeyCode::Up) {
-            movement.speed.current += y_axis_speed(
-                game_config.tile_size(),
-                game_config.camera_movement_modifier(),
-            );
+            movement.speed.current += y_axis_speed(game_config.tile_size(), speed_modifier);
             movement.add_direction(Direction::North);
         }
 
         if keyboard_input.pressed(KeyCode::Down) {
-            movement.speed.current -= y_axis_speed(
-                game_config.tile_size(),
-                game_config.camera_movement_modifier(),
-            );
+            movement.speed.current -= y_axis_speed(game_config.tile_size(), speed_modifier);
             movement.add_direction(Direction::South);
         }
     }

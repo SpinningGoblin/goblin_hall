@@ -196,4 +196,25 @@ pub fn startup(
             }
         }
     }
+
+    if let Some(character_config) = game_config.character_config("little_goblin") {
+        let goblin_handle = asset_server.get_handle(&character_config.sprite.path);
+        let target_index = texture_atlas.get_texture_index(&goblin_handle).unwrap();
+        let coordinate = world_coordinate_from_grid(
+            top_down_map.entry(),
+            game_config.grid_size().get(),
+            game_config.tile_size(),
+        );
+        println!("{:?}", top_down_map.entry());
+        commands.spawn(SpriteSheetBundle {
+            transform: Transform {
+                translation: Vec3::new(coordinate.x, coordinate.y, 10.0),
+                scale: Vec3::splat(game_config.tile_scale()),
+                ..default()
+            },
+            sprite: TextureAtlasSprite::new(target_index),
+            texture_atlas: atlas_handle,
+            ..default()
+        });
+    }
 }
