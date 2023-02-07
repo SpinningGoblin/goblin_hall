@@ -110,7 +110,7 @@ mod tests {
 
         let serialized = serde_json::to_string(&config).unwrap();
         assert_eq!(
-            "{\"initial_zoom_level\":1,\"speed_modifier\":4.0,\"zoom_levels\":[{\"order\":1,\"scale\":[1.0,1.0,1.0]}]}",
+            "{\"initial_zoom_level\":1,\"speed_modifier\":4.0,\"zoom_levels\":[{\"order\":1,\"scale\":[1.0,1.0,1.0],\"speed_modifier\":null}]}",
             &serialized
         );
     }
