@@ -1,6 +1,7 @@
 use bevy::prelude::Resource;
 use serde::{Deserialize, Serialize};
-use tdlg::map::cells::LayerType;
+
+use tdlg::map::layers::LayerType;
 
 #[derive(Clone, Debug, Deserialize, Resource, Serialize)]
 pub struct SpriteTileStats {
@@ -32,7 +33,7 @@ pub enum SpriteLayerType {
 
 #[cfg(test)]
 mod tests {
-    use tdlg::map::cells::LayerType;
+    use tdlg::map::layers::LayerType;
 
     use super::{SingleSprite, SpriteGroup, SpriteLayerType};
 

@@ -1,6 +1,4 @@
 pub mod camera;
+pub mod map;
 pub mod mouse;
-mod startup;
 pub mod textures;
-
-pub use startup::startup;

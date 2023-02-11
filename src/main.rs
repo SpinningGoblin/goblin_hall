@@ -3,10 +3,10 @@ use bevy::{
     window::close_on_esc,
     DefaultPlugins,
 };
-use labels::Label;
+use labels::{Label, StartupLabels};
 use resources::sprites::Handles;
 use state::AppState;
-use systems::{startup, textures};
+use systems::textures;
 
 mod components;
 mod labels;
@@ -25,9 +25,13 @@ fn main() {
         .add_system(close_on_esc)
         .add_system_set(SystemSet::on_enter(AppState::Startup).with_system(textures::load))
         .add_system_set(SystemSet::on_update(AppState::Startup).with_system(textures::check))
+        .add_system_set(SystemSet::on_exit(AppState::Startup).with_system(
+            systems::textures::finalize_texture_atlas.label(StartupLabels::TextureAtlas),
+        ))
         .add_system_set(
             SystemSet::on_enter(AppState::InGame)
-                .with_system(startup)
+                .with_system(systems::mouse::spawn_mouse_target.label(StartupLabels::TextureAtlas))
+                .with_system(systems::map::spawn_starting.after(StartupLabels::TextureAtlas))
                 .with_system(systems::camera::spawn_camera),
         )
         .add_system_set(

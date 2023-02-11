@@ -42,7 +42,7 @@ pub struct HealthRange {
 
 #[cfg(test)]
 mod tests {
-    use tdlg::map::cells::LayerType;
+    use tdlg::map::layers::LayerType;
 
     use crate::resources::config::{SingleSprite, SpriteLayerType};
 
