@@ -6,3 +6,8 @@ pub enum Label {
     CameraMovement,
     CameraMovementInput,
 }
+
+#[derive(SystemLabel, Debug)]
+pub enum StartupLabels {
+    TextureAtlas,
+}
