@@ -33,7 +33,7 @@ pub enum SpriteLayerType {
 
 #[cfg(test)]
 mod tests {
-    use tdlg::map::layers::LayerType;
+    use tdlg::map::layers::{FloorType, LayerType};
 
     use super::{SingleSprite, SpriteGroup, SpriteLayerType};
 
@@ -55,7 +55,7 @@ mod tests {
     fn serialize_group() {
         let group = SpriteGroup {
             key: "purple floor".to_string(),
-            layer_type: SpriteLayerType::TopDownMap(LayerType::Floor),
+            layer_type: SpriteLayerType::TopDownMap(LayerType::Floor(FloorType::Outdoor)),
             sprites: vec![SingleSprite {
                 key: "floor".to_string(),
                 path: "assets/floor/purple_1.png".to_string(),
@@ -64,7 +64,7 @@ mod tests {
             tile_stats: None,
         };
         let serialized = serde_json::to_string(&group).unwrap();
-        assert_eq!("{\"key\":\"purple floor\",\"layer_type\":{\"TopDownMap\":\"floor\"},\"sprites\":[{\"key\":\"floor\",\"path\":\"assets/floor/purple_1.png\",\"tile_stats\":null}],\"tile_stats\":null}", serialized);
+        assert_eq!("{\"key\":\"purple floor\",\"layer_type\":{\"TopDownMap\":{\"floor\":\"outdoor\"}},\"sprites\":[{\"key\":\"floor\",\"path\":\"assets/floor/purple_1.png\",\"tile_stats\":null}],\"tile_stats\":null}", serialized);
     }
 
     #[test]
@@ -85,7 +85,9 @@ mod tests {
         {
             "key": "purple floor",
             "layer_type": {
-                "TopDownMap": "floor"
+                "TopDownMap": {
+                    "floor": "outdoor"
+                }
             },
             "sprites": [
                 {
@@ -102,7 +104,7 @@ mod tests {
         let deserialized: SpriteGroup = serde_json::from_str(serialized).unwrap();
         assert_eq!(2, deserialized.sprites.len());
         assert_eq!(
-            SpriteLayerType::TopDownMap(LayerType::Floor),
+            SpriteLayerType::TopDownMap(LayerType::Floor(FloorType::Outdoor)),
             deserialized.layer_type
         );
     }

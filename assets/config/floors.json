@@ -2,7 +2,9 @@
   {
     "key": "dirt_floor",
     "layer_type": {
-      "TopDownMap": "room_floor"
+      "TopDownMap": {
+        "floor": "indoor"
+      }
     },
     "sprites": [
       {
@@ -22,7 +24,9 @@
   {
     "key": "cave_floor",
     "layer_type": {
-      "TopDownMap": "floor"
+      "TopDownMap": {
+        "floor": "outdoor"
+      }
     },
     "sprites": [
       {
@@ -50,7 +54,9 @@
   {
     "key": "sand_floor",
     "layer_type": {
-      "TopDownMap": "room_floor"
+      "TopDownMap": {
+        "floor": "indoor"
+      }
     },
     "sprites": [
       {

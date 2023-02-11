@@ -42,7 +42,7 @@ pub struct HealthRange {
 
 #[cfg(test)]
 mod tests {
-    use tdlg::map::layers::LayerType;
+    use tdlg::map::layers::{LayerType, StructureType};
 
     use crate::resources::config::{SingleSprite, SpriteLayerType};
 
@@ -52,7 +52,7 @@ mod tests {
     fn serialize() {
         let config = StructureConfig {
             key: "wall".to_lowercase(),
-            layer_type: SpriteLayerType::TopDownMap(LayerType::RoomWall),
+            layer_type: SpriteLayerType::TopDownMap(LayerType::Structure(StructureType::Wall)),
             health: 22,
             health_configs: vec![HealthConfig {
                 sprite: SingleSprite {
@@ -67,6 +67,6 @@ mod tests {
         };
 
         let serialized = serde_json::to_string(&config).unwrap();
-        assert_eq!("{\"key\":\"wall\",\"layer_type\":{\"TopDownMap\":\"room_wall\"},\"health\":22,\"health_configs\":[{\"sprite\":{\"key\":\"basic\",\"path\":\"/some/path/sprite.png\",\"tile_stats\":null},\"health_range\":{\"min\":0,\"max\":22},\"can_be_broken\":false,\"can_be_walked_on\":false}]}", &serialized);
+        assert_eq!("{\"key\":\"wall\",\"layer_type\":{\"TopDownMap\":{\"structure\":\"wall\"}},\"health\":22,\"health_configs\":[{\"sprite\":{\"key\":\"basic\",\"path\":\"/some/path/sprite.png\",\"tile_stats\":null},\"health_range\":{\"min\":0,\"max\":22},\"can_be_broken\":false,\"can_be_walked_on\":false}]}", &serialized);
     }
 }

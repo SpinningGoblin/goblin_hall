@@ -2,11 +2,14 @@ use bevy::{
     prelude::{default, info, AssetServer, Commands, Res, ResMut, Transform, Vec3},
     sprite::{SpriteSheetBundle, TextureAtlasSprite},
 };
-use tdlg::map::layers::LayerType;
+use tdlg::map::layers::{FloorType, LayerType, StructureType};
 
-use crate::resources::{
-    config::{grid::world_coordinate_from_grid, GameConfiguration},
-    sprites::Atlas,
+use crate::{
+    components::Body,
+    resources::{
+        config::{grid::world_coordinate_from_grid, GameConfiguration},
+        sprites::Atlas,
+    },
 };
 
 pub fn spawn_starting(
@@ -25,7 +28,7 @@ pub fn spawn_starting(
         for (index, layer) in cell.layers().iter().enumerate() {
             let position = Vec3::new(coordinate.x, coordinate.y, index as f32);
             match *layer {
-                LayerType::Floor => {
+                LayerType::Floor(FloorType::Outdoor) => {
                     if let Some(floor_sprite) = game_config.random_floor_sprite("cave_floor") {
                         let handle = asset_server.get_handle(&floor_sprite.path);
                         let texture_index = atlas.texture_atlas.get_texture_index(&handle).unwrap();
@@ -41,7 +44,7 @@ pub fn spawn_starting(
                         });
                     }
                 }
-                LayerType::RoomWall => {
+                LayerType::Structure(StructureType::Wall) => {
                     if let Some(structure_config) = game_config.structure_config_by_key("room_wall")
                     {
                         if let Some(wall_sprite) = structure_config.max_health_sprite() {
@@ -61,7 +64,7 @@ pub fn spawn_starting(
                         }
                     }
                 }
-                LayerType::RoomFloor => {
+                LayerType::Floor(FloorType::Indoor) => {
                     if let Some(floor_sprite) = game_config.random_floor_sprite("dirt_floor") {
                         let handle = asset_server.get_handle(&floor_sprite.path);
                         let texture_index = atlas.texture_atlas.get_texture_index(&handle).unwrap();
@@ -77,7 +80,7 @@ pub fn spawn_starting(
                         });
                     }
                 }
-                LayerType::Door => {
+                LayerType::Structure(StructureType::Door) => {
                     if let Some(floor_sprite) = game_config.random_floor_sprite("sand_floor") {
                         let handle = asset_server.get_handle(&floor_sprite.path);
                         let texture_index = atlas.texture_atlas.get_texture_index(&handle).unwrap();
@@ -93,7 +96,7 @@ pub fn spawn_starting(
                         });
                     }
                 }
-                LayerType::OuterWall => {
+                LayerType::Structure(StructureType::Boulder) => {
                     if let Some(structure_config) =
                         game_config.structure_config_by_key("outer_wall")
                     {
@@ -114,41 +117,53 @@ pub fn spawn_starting(
                         }
                     }
                 }
-                LayerType::Rubble => {
+                LayerType::Structure(StructureType::Rubble) => {
                     if let Some(structure_config) = game_config.structure_config_by_key("rubble") {
                         if let Some(wall_sprite) = structure_config.max_health_sprite() {
                             let handle = asset_server.get_handle(&wall_sprite.path);
                             let texture_index =
                                 atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                            commands.spawn(SpriteSheetBundle {
-                                transform: Transform {
-                                    translation: position,
-                                    scale: Vec3::splat(game_config.tile_scale()),
+                            commands
+                                .spawn(SpriteSheetBundle {
+                                    transform: Transform {
+                                        translation: position,
+                                        scale: Vec3::splat(game_config.tile_scale()),
+                                        ..default()
+                                    },
+                                    sprite: TextureAtlasSprite::new(texture_index),
+                                    texture_atlas: atlas.atlas_handle.clone(),
                                     ..default()
-                                },
-                                sprite: TextureAtlasSprite::new(texture_index),
-                                texture_atlas: atlas.atlas_handle.clone(),
-                                ..default()
-                            });
+                                })
+                                .insert(Body {
+                                    tile_size: game_config.tile_size(),
+                                    cell_center: position,
+                                    underground: false,
+                                });
                         }
                     }
                 }
-                LayerType::Table => {
+                LayerType::Structure(StructureType::Table) => {
                     if let Some(structure_config) = game_config.structure_config_by_key("table") {
                         if let Some(wall_sprite) = structure_config.max_health_sprite() {
                             let handle = asset_server.get_handle(&wall_sprite.path);
                             let texture_index =
                                 atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                            commands.spawn(SpriteSheetBundle {
-                                transform: Transform {
-                                    translation: position,
-                                    scale: Vec3::splat(game_config.tile_scale()),
+                            commands
+                                .spawn(SpriteSheetBundle {
+                                    transform: Transform {
+                                        translation: position,
+                                        scale: Vec3::splat(game_config.tile_scale()),
+                                        ..default()
+                                    },
+                                    sprite: TextureAtlasSprite::new(texture_index),
+                                    texture_atlas: atlas.atlas_handle.clone(),
                                     ..default()
-                                },
-                                sprite: TextureAtlasSprite::new(texture_index),
-                                texture_atlas: atlas.atlas_handle.clone(),
-                                ..default()
-                            });
+                                })
+                                .insert(Body {
+                                    tile_size: game_config.tile_size(),
+                                    cell_center: position,
+                                    underground: false,
+                                });
                         }
                     }
                 }
@@ -163,7 +178,10 @@ pub fn spawn_starting(
                         rarity
                     );
                 }
-                _ => {}
+                LayerType::Structure(it) => {
+                    info!("structure {:?} {:?}", &cell.coordinate(), it);
+                }
+                LayerType::Empty | LayerType::Entrance | LayerType::Exit | LayerType::Path => {}
             }
         }
     }
