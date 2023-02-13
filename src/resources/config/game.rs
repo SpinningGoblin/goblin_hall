@@ -116,6 +116,10 @@ impl GameConfiguration {
     pub fn mouse_target(&self) -> &SingleSprite {
         &self.basics.mouse_target
     }
+
+    pub fn zone(&self) -> &SingleSprite {
+        &self.basics.zone
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Resource, Serialize)]
@@ -124,6 +128,7 @@ pub struct GameBasics {
     grid_generation: GridGeneration,
     movement: MovementConfig,
     mouse_target: SingleSprite,
+    zone: SingleSprite,
 }
 
 impl GameBasics {
@@ -169,9 +174,14 @@ mod tests {
                 path: "outline.png".to_string(),
                 tile_stats: None,
             },
+            zone: SingleSprite {
+                key: "zone".to_string(),
+                path: "zone.png".to_string(),
+                tile_stats: None,
+            },
         };
 
         let serialized = serde_json::to_string(&basics).unwrap();
-        assert_eq!("{\"tiles\":{\"size\":32.0,\"scale\":4.0},\"grid_generation\":{\"size\":20,\"target_num_rooms\":20,\"seed\":\"test\"},\"movement\":{\"timer\":{\"wait_time\":0.2}},\"mouse_target\":{\"key\":\"target\",\"path\":\"outline.png\",\"tile_stats\":null}}", &serialized);
+        assert_eq!("{\"tiles\":{\"size\":32.0,\"scale\":4.0},\"grid_generation\":{\"size\":20,\"target_num_rooms\":20,\"seed\":\"test\"},\"movement\":{\"timer\":{\"wait_time\":0.2}},\"mouse_target\":{\"key\":\"target\",\"path\":\"outline.png\",\"tile_stats\":null},\"zone\":{\"key\":\"zone\",\"path\":\"zone.png\",\"tile_stats\":null}}", &serialized);
     }
 }
