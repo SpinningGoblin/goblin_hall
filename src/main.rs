@@ -3,7 +3,7 @@ use bevy::{
     window::close_on_esc,
     DefaultPlugins,
 };
-use labels::{Label, StartupLabels};
+use labels::{Label, MouseLabels, StartupLabels, ZoneLabels};
 use resources::sprites::Handles;
 use state::AppState;
 use systems::textures;
@@ -30,7 +30,7 @@ fn main() {
         ))
         .add_system_set(
             SystemSet::on_enter(AppState::InGame)
-                .with_system(systems::mouse::spawn_mouse_target.label(StartupLabels::TextureAtlas))
+                .with_system(systems::targets::spawn.after(StartupLabels::TextureAtlas))
                 .with_system(systems::map::spawn_starting.after(StartupLabels::TextureAtlas))
                 .with_system(systems::camera::spawn_camera),
         )
@@ -45,7 +45,12 @@ fn main() {
                         .after(Label::CameraMovementInput),
                 )
                 .with_system(systems::camera::zoom_camera)
-                .with_system(systems::mouse::move_mouse_target),
+                .with_system(systems::targets::move_target.label(MouseLabels::Movement))
+                .with_system(
+                    systems::zones::place_zone
+                        .label(ZoneLabels::PlaceZone)
+                        .after(MouseLabels::Movement),
+                ),
         )
         .run();
 }

@@ -11,3 +11,13 @@ pub enum Label {
 pub enum StartupLabels {
     TextureAtlas,
 }
+
+#[derive(SystemLabel, Debug)]
+pub enum MouseLabels {
+    Movement,
+}
+
+#[derive(SystemLabel, Debug)]
+pub enum ZoneLabels {
+    PlaceZone,
+}
