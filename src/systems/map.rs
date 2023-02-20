@@ -5,7 +5,12 @@ use bevy::{
 use tdlg::map::layers::{FloorType, LayerType, StructureType};
 
 use crate::{
-    components::Body,
+    components::{
+        characters::Character,
+        movement::CameraMoveTimer,
+        structures::{Body, Structure},
+        Map, World, WorldTimer,
+    },
     resources::{
         config::{grid::world_coordinate_from_grid, GameConfiguration},
         sprites::Atlas,
@@ -18,6 +23,15 @@ pub fn spawn_starting(
     asset_server: Res<AssetServer>,
     mut game_config: ResMut<GameConfiguration>,
 ) {
+    commands.spawn(World::default());
+    commands.spawn(CameraMoveTimer {
+        timer: game_config.movement_timer(),
+    });
+
+    commands.spawn(WorldTimer {
+        timer: game_config.world_timer(),
+    });
+
     let top_down_map = game_config.generate_top_down_map();
     for cell in top_down_map.grid().cells() {
         let coordinate = world_coordinate_from_grid(
@@ -51,16 +65,26 @@ pub fn spawn_starting(
                             let handle = asset_server.get_handle(&wall_sprite.path);
                             let texture_index =
                                 atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                            commands.spawn(SpriteSheetBundle {
-                                transform: Transform {
-                                    translation: position,
-                                    scale: Vec3::splat(game_config.tile_scale()),
+                            commands
+                                .spawn(SpriteSheetBundle {
+                                    transform: Transform {
+                                        translation: position,
+                                        scale: Vec3::splat(game_config.tile_scale()),
+                                        ..default()
+                                    },
+                                    sprite: TextureAtlasSprite::new(texture_index),
+                                    texture_atlas: atlas.atlas_handle.clone(),
                                     ..default()
-                                },
-                                sprite: TextureAtlasSprite::new(texture_index),
-                                texture_atlas: atlas.atlas_handle.clone(),
-                                ..default()
-                            });
+                                })
+                                .insert(Structure {
+                                    layer_type: LayerType::Structure(StructureType::Wall),
+                                })
+                                .insert(Body {
+                                    tile_size: game_config.tile_size(),
+                                    cell_center: position.truncate(),
+                                    underground: false,
+                                    center_coordinate: cell.coordinate().clone(),
+                                });
                         }
                     }
                 }
@@ -84,16 +108,26 @@ pub fn spawn_starting(
                     if let Some(floor_sprite) = game_config.random_floor_sprite("sand_floor") {
                         let handle = asset_server.get_handle(&floor_sprite.path);
                         let texture_index = atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                        commands.spawn(SpriteSheetBundle {
-                            transform: Transform {
-                                translation: position,
-                                scale: Vec3::splat(game_config.tile_scale()),
+                        commands
+                            .spawn(SpriteSheetBundle {
+                                transform: Transform {
+                                    translation: position,
+                                    scale: Vec3::splat(game_config.tile_scale()),
+                                    ..default()
+                                },
+                                sprite: TextureAtlasSprite::new(texture_index),
+                                texture_atlas: atlas.atlas_handle.clone(),
                                 ..default()
-                            },
-                            sprite: TextureAtlasSprite::new(texture_index),
-                            texture_atlas: atlas.atlas_handle.clone(),
-                            ..default()
-                        });
+                            })
+                            .insert(Structure {
+                                layer_type: LayerType::Structure(StructureType::Wall),
+                            })
+                            .insert(Body {
+                                tile_size: game_config.tile_size(),
+                                cell_center: position.truncate(),
+                                underground: false,
+                                center_coordinate: cell.coordinate().clone(),
+                            });
                     }
                 }
                 LayerType::Structure(StructureType::Boulder) => {
@@ -104,16 +138,26 @@ pub fn spawn_starting(
                             let handle = asset_server.get_handle(&wall_sprite.path);
                             let texture_index =
                                 atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                            commands.spawn(SpriteSheetBundle {
-                                transform: Transform {
-                                    translation: position,
-                                    scale: Vec3::splat(game_config.tile_scale()),
+                            commands
+                                .spawn(SpriteSheetBundle {
+                                    transform: Transform {
+                                        translation: position,
+                                        scale: Vec3::splat(game_config.tile_scale()),
+                                        ..default()
+                                    },
+                                    sprite: TextureAtlasSprite::new(texture_index),
+                                    texture_atlas: atlas.atlas_handle.clone(),
                                     ..default()
-                                },
-                                sprite: TextureAtlasSprite::new(texture_index),
-                                texture_atlas: atlas.atlas_handle.clone(),
-                                ..default()
-                            });
+                                })
+                                .insert(Structure {
+                                    layer_type: LayerType::Structure(StructureType::Boulder),
+                                })
+                                .insert(Body {
+                                    tile_size: game_config.tile_size(),
+                                    cell_center: position.truncate(),
+                                    underground: false,
+                                    center_coordinate: cell.coordinate().clone(),
+                                });
                         }
                     }
                 }
@@ -134,10 +178,14 @@ pub fn spawn_starting(
                                     texture_atlas: atlas.atlas_handle.clone(),
                                     ..default()
                                 })
+                                .insert(Structure {
+                                    layer_type: LayerType::Structure(StructureType::Rubble),
+                                })
                                 .insert(Body {
                                     tile_size: game_config.tile_size(),
-                                    cell_center: position,
+                                    cell_center: position.truncate(),
                                     underground: false,
+                                    center_coordinate: cell.coordinate().clone(),
                                 });
                         }
                     }
@@ -161,8 +209,9 @@ pub fn spawn_starting(
                                 })
                                 .insert(Body {
                                     tile_size: game_config.tile_size(),
-                                    cell_center: position,
+                                    cell_center: position.truncate(),
                                     underground: false,
+                                    center_coordinate: cell.coordinate().clone(),
                                 });
                         }
                     }
@@ -198,15 +247,23 @@ pub fn spawn_starting(
             game_config.tile_size(),
         );
         info!("entry {:?}", top_down_map.entry());
-        commands.spawn(SpriteSheetBundle {
-            transform: Transform {
-                translation: Vec3::new(coordinate.x, coordinate.y, 10.0),
-                scale: Vec3::splat(game_config.tile_scale()),
+        commands
+            .spawn(SpriteSheetBundle {
+                transform: Transform {
+                    translation: Vec3::new(coordinate.x, coordinate.y, 10.0),
+                    scale: Vec3::splat(game_config.tile_scale()),
+                    ..default()
+                },
+                sprite: TextureAtlasSprite::new(target_index),
+                texture_atlas: atlas.atlas_handle.clone(),
                 ..default()
-            },
-            sprite: TextureAtlasSprite::new(target_index),
-            texture_atlas: atlas.atlas_handle.clone(),
-            ..default()
+            })
+            .insert(Character);
+
+        commands.spawn(Map {
+            current: top_down_map,
+            tile_size: game_config.tile_size(),
+            grid_size: game_config.grid_size().get(),
         });
     }
 }
