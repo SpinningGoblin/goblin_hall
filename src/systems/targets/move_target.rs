@@ -5,20 +5,17 @@ use bevy::{
 };
 
 use crate::{
-    components::{cameras::GameCamera, target::MouseTarget},
-    resources::config::{
-        grid::{grid_coordinate_from_world, world_coordinate_from_grid},
-        GameConfiguration,
-    },
+    components::{cameras::GameCamera, target::MouseTarget, Map},
+    resources::config::grid::{grid_coordinate_from_world, world_coordinate_from_grid},
 };
 
 pub fn move_target(
     windows: Res<Windows>,
     camera_query: Query<(&Camera, &GlobalTransform), With<GameCamera>>,
     mut target_query: Query<(&mut Transform, &mut Visibility), With<MouseTarget>>,
-    game_config: Res<GameConfiguration>,
+    map_query: Query<&Map>,
 ) {
-    if target_query.is_empty() {
+    if target_query.is_empty() || map_query.is_empty() {
         return;
     }
 
@@ -33,6 +30,8 @@ pub fn move_target(
     } else {
         windows.get_primary().unwrap()
     };
+
+    let map = map_query.single();
 
     // check if the cursor is inside the window and get its position
     if let Some(screen_pos) = window.cursor_position() {
@@ -49,16 +48,9 @@ pub fn move_target(
         let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0)).truncate();
         // +20.0 for... unknown reasons. Maybe a "my screen" thing? Need to figure that out.
         let world_coordinate = Vec2::new(world_pos.x + 20.0, world_pos.y + 20.0);
-        let grid_coords = grid_coordinate_from_world(
-            &world_coordinate,
-            game_config.grid_size().get(),
-            game_config.tile_size(),
-        );
-        let new_position = world_coordinate_from_grid(
-            &grid_coords,
-            game_config.grid_size().get(),
-            game_config.tile_size(),
-        );
+        let grid_coords =
+            grid_coordinate_from_world(&world_coordinate, map.grid_size, map.tile_size);
+        let new_position = world_coordinate_from_grid(&grid_coords, map.grid_size, map.tile_size);
         target_visibility.is_visible = true;
         target_transform.translation.x = new_position.x;
         target_transform.translation.y = new_position.y;
