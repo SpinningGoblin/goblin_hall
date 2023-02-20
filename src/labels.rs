@@ -21,3 +21,9 @@ pub enum MouseLabels {
 pub enum ZoneLabels {
     PlaceZone,
 }
+
+#[derive(SystemLabel, Debug)]
+pub enum WorldLabels {
+    TickWorld,
+    CheckActions,
+}
