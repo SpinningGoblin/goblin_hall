@@ -1,16 +1,13 @@
-use std::{num::NonZeroU16, time::Duration};
+use std::num::NonZeroU16;
 
-use bevy::{
-    prelude::{Resource, Vec3},
-    time::Timer,
-};
+use bevy::prelude::{Resource, Vec3};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use tdlg::{generation::Generator, map::TopDownMap};
 
 use super::{
-    CameraConfig, CharacterConfig, MovementConfig, MovementTimer, SingleSprite, SpriteGroup,
-    SpriteTileStats, StructureConfig,
+    timers::WorldTickTimerConfig, CameraConfig, CharacterConfig, MovementConfig, MovementTimer,
+    SingleSprite, SpriteGroup, SpriteTileStats, StructureConfig, WorldTickTimer,
 };
 
 #[derive(Debug, Resource)]
@@ -21,7 +18,6 @@ pub struct GameConfiguration {
     pub characters: Vec<CharacterConfig>,
     pub camera: CameraConfig,
     generator: Generator,
-    movement_timer: MovementTimer,
 }
 
 impl GameConfiguration {
@@ -36,6 +32,7 @@ impl GameConfiguration {
             .seed(&basics.grid_generation.seed)
             .grid_size(basics.grid_generation.size)
             .target_number_rooms(basics.grid_generation.target_num_rooms)
+            .include_outer_wall(false)
             .build();
         Self {
             floor_sprites,
@@ -43,9 +40,16 @@ impl GameConfiguration {
             structures,
             characters,
             camera,
-            movement_timer: basics.movement_timer(),
             basics,
         }
+    }
+
+    pub fn movement_timer(&self) -> MovementTimer {
+        self.basics.movement_timer()
+    }
+
+    pub fn world_timer(&self) -> WorldTickTimer {
+        self.basics.world_timer()
     }
 
     pub fn character_config(&self, key: &str) -> Option<&CharacterConfig> {
@@ -66,14 +70,6 @@ impl GameConfiguration {
 
     pub fn generate_top_down_map(&mut self) -> TopDownMap {
         self.generator.generate_top_down_map().unwrap()
-    }
-
-    pub fn reset_movement_timer(&mut self) {
-        self.movement_timer.0.reset();
-    }
-
-    pub fn tick_movement_timer(&mut self, delta: Duration) -> &Timer {
-        self.movement_timer.0.tick(delta)
     }
 
     pub fn camera_movement_modifier(&self, current_zoom: &Vec3) -> f32 {
@@ -129,11 +125,16 @@ pub struct GameBasics {
     movement: MovementConfig,
     mouse_target: SingleSprite,
     zone: SingleSprite,
+    world: WorldTickTimerConfig,
 }
 
 impl GameBasics {
     pub fn movement_timer(&self) -> MovementTimer {
         self.movement.movement_timer()
+    }
+
+    pub fn world_timer(&self) -> WorldTickTimer {
+        self.world.timer()
     }
 }
 
@@ -149,7 +150,8 @@ mod tests {
     use std::num::NonZeroU16;
 
     use crate::resources::config::{
-        game::GridGeneration, MovementConfig, MovementTimerConfig, SingleSprite, SpriteTileStats,
+        game::GridGeneration, timers::WorldTickTimerConfig, MovementConfig, MovementTimerConfig,
+        SingleSprite, SpriteTileStats,
     };
 
     use super::GameBasics;
@@ -179,6 +181,7 @@ mod tests {
                 path: "zone.png".to_string(),
                 tile_stats: None,
             },
+            world: WorldTickTimerConfig { wait_time: 0.4 },
         };
 
         let serialized = serde_json::to_string(&basics).unwrap();

@@ -15,4 +15,4 @@ pub use load::{load_game_configuration, LoadError};
 pub use movement::MovementConfig;
 pub use sprites::{SingleSprite, SpriteGroup, SpriteLayerType, SpriteTileStats};
 pub use structures::{HealthConfig, HealthRange, StructureConfig};
-pub use timers::{MovementTimer, MovementTimerConfig};
+pub use timers::{MovementTimer, MovementTimerConfig, WorldTickTimer, WorldTickTimerConfig};

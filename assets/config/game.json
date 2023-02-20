@@ -5,7 +5,7 @@
   },
   "grid_generation": {
     "size": 200,
-    "target_num_rooms": 50,
+    "target_num_rooms": 25,
     "seed": "goblin tavern hall"
   },
   "movement": {
@@ -20,5 +20,8 @@
   "zone": {
     "key": "zone",
     "path": "sprites/zone.png"
+  },
+  "world": {
+    "wait_time": 0.5
   }
 }
