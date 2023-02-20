@@ -1,6 +1,4 @@
 use bevy::prelude::Component;
 
 #[derive(Component)]
-pub struct Todo {
-
-}
+pub struct Todo {}

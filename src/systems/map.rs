@@ -83,7 +83,7 @@ pub fn spawn_starting(
                                     tile_size: game_config.tile_size(),
                                     cell_center: position.truncate(),
                                     underground: false,
-                                    center_coordinate: cell.coordinate().clone(),
+                                    center_coordinate: *cell.coordinate(),
                                 });
                         }
                     }
@@ -126,7 +126,7 @@ pub fn spawn_starting(
                                 tile_size: game_config.tile_size(),
                                 cell_center: position.truncate(),
                                 underground: false,
-                                center_coordinate: cell.coordinate().clone(),
+                                center_coordinate: *cell.coordinate(),
                             });
                     }
                 }
@@ -156,7 +156,7 @@ pub fn spawn_starting(
                                     tile_size: game_config.tile_size(),
                                     cell_center: position.truncate(),
                                     underground: false,
-                                    center_coordinate: cell.coordinate().clone(),
+                                    center_coordinate: *cell.coordinate(),
                                 });
                         }
                     }
@@ -185,7 +185,7 @@ pub fn spawn_starting(
                                     tile_size: game_config.tile_size(),
                                     cell_center: position.truncate(),
                                     underground: false,
-                                    center_coordinate: cell.coordinate().clone(),
+                                    center_coordinate: *cell.coordinate(),
                                 });
                         }
                     }
@@ -211,7 +211,7 @@ pub fn spawn_starting(
                                     tile_size: game_config.tile_size(),
                                     cell_center: position.truncate(),
                                     underground: false,
-                                    center_coordinate: cell.coordinate().clone(),
+                                    center_coordinate: *cell.coordinate(),
                                 });
                         }
                     }

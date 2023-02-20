@@ -44,7 +44,7 @@ pub fn find_move_target(
     );
 
     let visibility_box = GridBox {
-        center: character_coordinate.clone(),
+        center: character_coordinate,
         size: 25,
     };
 
@@ -68,7 +68,7 @@ pub fn find_move_target(
             return;
         }
 
-        if let Some(mut path) = pathfind(&map, &character_coordinate, &body.center_coordinate) {
+        if let Some(mut path) = pathfind(map, &character_coordinate, &body.center_coordinate) {
             path.reverse();
             let move_target = MoveTarget {
                 point: body.cell_center,
@@ -88,8 +88,5 @@ pub fn find_move_target(
 }
 
 fn is_wall(layer_type: &LayerType) -> bool {
-    match *layer_type {
-        LayerType::Structure(StructureType::Wall) => true,
-        _ => false,
-    }
+    matches!(*layer_type, LayerType::Structure(StructureType::Wall))
 }
