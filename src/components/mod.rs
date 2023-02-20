@@ -1,5 +1,3 @@
-mod body;
-mod bounding_box;
 pub mod cameras;
 pub mod characters;
 mod grid_box;
