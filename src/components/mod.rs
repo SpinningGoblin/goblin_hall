@@ -3,8 +3,10 @@ pub mod characters;
 mod grid_box;
 mod map;
 pub mod movement;
+pub mod priorities;
 pub mod structures;
 pub mod target;
+mod tasks;
 mod world;
 pub mod zones;
 
