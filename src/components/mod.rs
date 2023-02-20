@@ -5,6 +5,7 @@ pub mod characters;
 mod grid_box;
 mod map;
 pub mod movement;
+pub mod structures;
 pub mod target;
 mod world;
 pub mod zones;
