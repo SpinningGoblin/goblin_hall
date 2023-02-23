@@ -78,7 +78,7 @@ fn find_path(
         return None;
     }
 
-    if let Some(mut path) = pathfind(map, character_coordinate, &coordinate) {
+    if let Some(mut path) = pathfind(map, character_coordinate, coordinate) {
         path.reverse();
         Some(Path {
             direction,
