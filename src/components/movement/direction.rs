@@ -1,4 +1,6 @@
-#[derive(PartialEq, Copy, Clone, Debug, Eq)]
+use strum_macros::EnumIter;
+
+#[derive(PartialEq, Copy, Clone, Debug, EnumIter, Eq)]
 pub enum Direction {
     North,
     NorthEast,
