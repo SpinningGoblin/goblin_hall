@@ -4,7 +4,6 @@ mod grid_box;
 pub mod jobs;
 mod map;
 pub mod movement;
-pub mod priorities;
 pub mod structures;
 pub mod target;
 pub mod tasks;
