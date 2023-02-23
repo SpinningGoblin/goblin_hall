@@ -2,28 +2,14 @@ use bevy::prelude::SystemLabel;
 
 // System labels to enforce a run order of our systems
 #[derive(SystemLabel, Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Label {
-    CameraMovement,
-    CameraMovementInput,
+pub enum Labels {
+    Input,
+    InputResponse,
+    CharacterJobs,
+    Tick,
 }
 
 #[derive(SystemLabel, Debug)]
 pub enum StartupLabels {
     TextureAtlas,
-}
-
-#[derive(SystemLabel, Debug)]
-pub enum MouseLabels {
-    Movement,
-}
-
-#[derive(SystemLabel, Debug)]
-pub enum ZoneLabels {
-    PlaceZone,
-}
-
-#[derive(SystemLabel, Debug)]
-pub enum WorldLabels {
-    TickWorld,
-    CheckActions,
 }
