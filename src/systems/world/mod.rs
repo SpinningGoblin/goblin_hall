@@ -1,3 +1,3 @@
 mod timers;
 
-pub use timers::{check_world_actions, tick_game_world};
+pub use timers::tick_game_world;
