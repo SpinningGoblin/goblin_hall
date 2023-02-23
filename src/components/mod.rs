@@ -1,6 +1,7 @@
 pub mod cameras;
 pub mod characters;
 mod grid_box;
+pub mod jobs;
 mod map;
 pub mod movement;
 pub mod priorities;
