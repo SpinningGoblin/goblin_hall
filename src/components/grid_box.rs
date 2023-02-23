@@ -1,5 +1,7 @@
 use tdlg::map::cells::Coordinate;
 
+use super::movement::Direction;
+
 /// A square of a specific size, in the grid coordinates
 pub struct GridBox {
     pub center: Coordinate,
@@ -12,6 +14,19 @@ impl GridBox {
             && coordinate.x() > self.min_x()
             && coordinate.y() > self.min_y()
             && coordinate.y() < self.max_y()
+    }
+
+    pub fn farthest_coordinate_at_direction(&self, direction: &Direction) -> Coordinate {
+        match direction {
+            Direction::North => Coordinate::from((self.center.x(), self.max_y())),
+            Direction::NorthEast => Coordinate::from((self.max_x(), self.max_y())),
+            Direction::East => Coordinate::from((self.max_x(), self.center.y())),
+            Direction::SouthEast => Coordinate::from((self.max_x(), self.min_y())),
+            Direction::South => Coordinate::from((self.center.x(), self.min_y())),
+            Direction::SouthWest => Coordinate::from((self.min_x(), self.min_y())),
+            Direction::West => Coordinate::from((self.min_x(), self.center.y())),
+            Direction::NorthWest => Coordinate::from((self.min_x(), self.max_y())),
+        }
     }
 
     pub fn min_x(&self) -> i32 {
