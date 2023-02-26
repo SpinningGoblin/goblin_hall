@@ -29,8 +29,6 @@ pub fn do_task_work(
     for character_bundle in query.iter_mut() {
         let (_, mut transform, mut todo) = character_bundle;
 
-        // Maybe instead of just getting the last one, I get the last uncompleted one.
-        // Or maybe just the first one? So the tasks don't have to be in an odd order
         if let Some(current_task) = todo.tasks.iter_mut().find(|task| !task.is_complete()) {
             match current_task {
                 Task::Walk(ref mut path) => {
