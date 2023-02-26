@@ -12,4 +12,4 @@ pub mod zones;
 
 pub use grid_box::GridBox;
 pub use map::Map;
-pub use world::{World, WorldTimer};
+pub use world::World;
