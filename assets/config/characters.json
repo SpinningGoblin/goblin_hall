@@ -4,6 +4,7 @@
     "sprite": {
       "key": "goblin",
       "path": "sprites/characters/little_goblin.png"
-    }
+    },
+    "visibility": 10
   }
 ]

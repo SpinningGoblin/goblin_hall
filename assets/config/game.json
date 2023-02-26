@@ -22,6 +22,6 @@
     "path": "sprites/zone.png"
   },
   "world": {
-    "wait_time": 0.5
+    "wait_time": 0.4
   }
 }
