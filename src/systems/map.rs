@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{default, info, AssetServer, Commands, Res, ResMut, Transform, Vec3},
+    prelude::{default, info, AssetServer, Commands, Res, ResMut, Transform, Vec3, Visibility},
     sprite::{SpriteSheetBundle, TextureAtlasSprite},
 };
 use tdlg::map::layers::{FloorType, LayerType, StructureType};
@@ -7,9 +7,10 @@ use tdlg::map::layers::{FloorType, LayerType, StructureType};
 use crate::{
     components::{
         characters::Character,
+        jobs::ExplorationHistory,
         movement::CameraMoveTimer,
-        structures::{Body, Structure},
-        Map, World, WorldTimer,
+        structures::{Body, Mineable, Structure},
+        Map, World,
     },
     resources::{
         config::{grid::world_coordinate_from_grid, GameConfiguration},
@@ -28,9 +29,7 @@ pub fn spawn_starting(
         timer: game_config.movement_timer(),
     });
 
-    commands.spawn(WorldTimer {
-        timer: game_config.world_timer(),
-    });
+    commands.spawn(ExplorationHistory::default());
 
     let top_down_map = game_config.generate_top_down_map();
     for cell in top_down_map.grid().cells() {
@@ -46,16 +45,24 @@ pub fn spawn_starting(
                     if let Some(floor_sprite) = game_config.random_floor_sprite("cave_floor") {
                         let handle = asset_server.get_handle(&floor_sprite.path);
                         let texture_index = atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                        commands.spawn(SpriteSheetBundle {
-                            transform: Transform {
-                                translation: position,
-                                scale: Vec3::splat(game_config.tile_scale()),
+                        commands
+                            .spawn(SpriteSheetBundle {
+                                transform: Transform {
+                                    translation: position,
+                                    scale: Vec3::splat(game_config.tile_scale()),
+                                    ..default()
+                                },
+                                sprite: TextureAtlasSprite::new(texture_index),
+                                texture_atlas: atlas.atlas_handle.clone(),
+                                visibility: Visibility { is_visible: false },
                                 ..default()
-                            },
-                            sprite: TextureAtlasSprite::new(texture_index),
-                            texture_atlas: atlas.atlas_handle.clone(),
-                            ..default()
-                        });
+                            })
+                            .insert(Body {
+                                tile_size: game_config.tile_size(),
+                                cell_center: position.truncate(),
+                                underground: false,
+                                center_coordinate: *cell.coordinate(),
+                            });
                     }
                 }
                 LayerType::Structure(StructureType::Wall) => {
@@ -74,9 +81,13 @@ pub fn spawn_starting(
                                     },
                                     sprite: TextureAtlasSprite::new(texture_index),
                                     texture_atlas: atlas.atlas_handle.clone(),
+                                    visibility: Visibility { is_visible: false },
                                     ..default()
                                 })
                                 .insert(Structure {
+                                    layer_type: LayerType::Structure(StructureType::Wall),
+                                })
+                                .insert(Mineable {
                                     layer_type: LayerType::Structure(StructureType::Wall),
                                 })
                                 .insert(Body {
@@ -92,16 +103,24 @@ pub fn spawn_starting(
                     if let Some(floor_sprite) = game_config.random_floor_sprite("dirt_floor") {
                         let handle = asset_server.get_handle(&floor_sprite.path);
                         let texture_index = atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                        commands.spawn(SpriteSheetBundle {
-                            transform: Transform {
-                                translation: position,
-                                scale: Vec3::splat(game_config.tile_scale()),
+                        commands
+                            .spawn(SpriteSheetBundle {
+                                transform: Transform {
+                                    translation: position,
+                                    scale: Vec3::splat(game_config.tile_scale()),
+                                    ..default()
+                                },
+                                sprite: TextureAtlasSprite::new(texture_index),
+                                texture_atlas: atlas.atlas_handle.clone(),
+                                visibility: Visibility { is_visible: false },
                                 ..default()
-                            },
-                            sprite: TextureAtlasSprite::new(texture_index),
-                            texture_atlas: atlas.atlas_handle.clone(),
-                            ..default()
-                        });
+                            })
+                            .insert(Body {
+                                tile_size: game_config.tile_size(),
+                                cell_center: position.truncate(),
+                                underground: false,
+                                center_coordinate: *cell.coordinate(),
+                            });
                     }
                 }
                 LayerType::Structure(StructureType::Door) => {
@@ -117,6 +136,7 @@ pub fn spawn_starting(
                                 },
                                 sprite: TextureAtlasSprite::new(texture_index),
                                 texture_atlas: atlas.atlas_handle.clone(),
+                                visibility: Visibility { is_visible: false },
                                 ..default()
                             })
                             .insert(Structure {
@@ -147,6 +167,7 @@ pub fn spawn_starting(
                                     },
                                     sprite: TextureAtlasSprite::new(texture_index),
                                     texture_atlas: atlas.atlas_handle.clone(),
+                                    visibility: Visibility { is_visible: false },
                                     ..default()
                                 })
                                 .insert(Structure {
@@ -176,6 +197,7 @@ pub fn spawn_starting(
                                     },
                                     sprite: TextureAtlasSprite::new(texture_index),
                                     texture_atlas: atlas.atlas_handle.clone(),
+                                    visibility: Visibility { is_visible: false },
                                     ..default()
                                 })
                                 .insert(Structure {
@@ -205,6 +227,7 @@ pub fn spawn_starting(
                                     },
                                     sprite: TextureAtlasSprite::new(texture_index),
                                     texture_atlas: atlas.atlas_handle.clone(),
+                                    visibility: Visibility { is_visible: false },
                                     ..default()
                                 })
                                 .insert(Body {
@@ -258,7 +281,9 @@ pub fn spawn_starting(
                 texture_atlas: atlas.atlas_handle.clone(),
                 ..default()
             })
-            .insert(Character);
+            .insert(Character {
+                visibility: character_config.visibility,
+            });
 
         commands.spawn(Map {
             current: top_down_map,
