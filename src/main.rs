@@ -19,6 +19,7 @@ fn main() {
 
     let mut app = App::new();
     app.init_resource::<Handles>()
+        .insert_resource(game_config.world_timer())
         .insert_resource(game_config)
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()));
 
@@ -41,9 +42,13 @@ fn main() {
     let character_job_set = SystemSet::on_update(AppState::InGame)
         .label(Labels::CharacterJobs)
         .with_system(systems::jobs::assign_job)
-        .with_system(systems::tasks::build_explore_todo)
+        .with_system(systems::tasks::build_todo)
         .with_system(systems::tasks::do_task_work)
         .with_system(systems::tasks::remove_todo);
+
+    let cleanup_set = SystemSet::on_update(AppState::InGame)
+        .after(Labels::CharacterJobs)
+        .with_system(systems::characters::show_in_visible_area);
 
     app.add_state(AppState::Startup)
         .add_system(close_on_esc)
@@ -62,5 +67,6 @@ fn main() {
         .add_system_set(input_responses)
         .add_system_set(tick_set)
         .add_system_set(character_job_set)
+        .add_system_set(cleanup_set)
         .run();
 }
