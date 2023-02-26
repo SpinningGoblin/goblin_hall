@@ -1,21 +1,24 @@
 use bevy::{
     prelude::{
         default, AssetServer, Commands, Input, MouseButton, Query, Res, Transform, Vec3,
-        Visibility, With, Without,
+        Visibility, With,
     },
     sprite::{SpriteSheetBundle, TextureAtlasSprite},
 };
 
 use crate::{
-    components::{target::MouseTarget, zones::Zone},
-    resources::{config::GameConfiguration, sprites::Atlas},
+    components::{structures::Body, target::MouseTarget, zones::Zone, Map},
+    resources::{
+        config::{grid::grid_coordinate_from_world, GameConfiguration},
+        sprites::Atlas,
+    },
 };
 
 pub fn place_zone(
     mut commands: Commands,
     mouse_input: Res<Input<MouseButton>>,
     target_query: Query<(&Transform, &Visibility), With<MouseTarget>>,
-    mut zone_query: Query<(&mut Transform, &Zone), Without<MouseTarget>>,
+    map_query: Query<&Map>,
     game_config: Res<GameConfiguration>,
     atlas: Res<Atlas>,
     asset_server: Res<AssetServer>,
@@ -30,27 +33,35 @@ pub fn place_zone(
         return;
     }
 
-    if zone_query.is_empty() {
-        let target_handle = asset_server.get_handle(&game_config.zone().path);
-        let target_index = atlas
-            .texture_atlas
-            .get_texture_index(&target_handle)
-            .unwrap();
-        commands
-            .spawn(SpriteSheetBundle {
-                transform: Transform {
-                    translation: target_transform.translation,
-                    scale: Vec3::splat(game_config.tile_scale()),
-                    ..default()
-                },
-                sprite: TextureAtlasSprite::new(target_index),
-                texture_atlas: atlas.atlas_handle.clone(),
-                ..default()
-            })
-            .insert(Zone);
-    } else {
-        let (mut transform, _) = zone_query.single_mut();
-        transform.translation.x = target_transform.translation.x;
-        transform.translation.y = target_transform.translation.y;
+    if map_query.is_empty() {
+        return;
     }
+
+    let map = map_query.single();
+
+    let target_handle = asset_server.get_handle(&game_config.zone().path);
+    let target_index = atlas
+        .texture_atlas
+        .get_texture_index(&target_handle)
+        .unwrap();
+    let point = target_transform.translation.truncate();
+    let coordinate = grid_coordinate_from_world(&point, map.grid_size, map.tile_size);
+    commands
+        .spawn(SpriteSheetBundle {
+            transform: Transform {
+                translation: target_transform.translation,
+                scale: Vec3::splat(game_config.tile_scale()),
+                ..default()
+            },
+            sprite: TextureAtlasSprite::new(target_index),
+            texture_atlas: atlas.atlas_handle.clone(),
+            ..default()
+        })
+        .insert(Zone)
+        .insert(Body {
+            tile_size: map.tile_size,
+            cell_center: point,
+            center_coordinate: coordinate,
+            underground: false,
+        });
 }
