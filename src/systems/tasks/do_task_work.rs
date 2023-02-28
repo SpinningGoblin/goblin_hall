@@ -1,18 +1,33 @@
-use bevy::prelude::{info, Commands, Query, Transform};
+use bevy::{
+    prelude::{
+        default, info, AssetServer, Commands, Query, Res, Transform, Vec3, Visibility, With,
+        Without,
+    },
+    sprite::{SpriteSheetBundle, TextureAtlasSprite},
+};
+use tdlg::map::layers::{LayerType, StructureType};
 
-use crate::components::{
-    characters::Character,
-    jobs::ExplorationHistory,
-    tasks::{Task, Todo},
-    Map, World,
+use crate::{
+    components::{
+        characters::Character,
+        jobs::ExplorationHistory,
+        structures::{Body, Mineable, Structure},
+        tasks::{Task, Todo},
+        Map, World,
+    },
+    resources::{config::GameConfiguration, sprites::Atlas},
 };
 
 pub fn do_task_work(
     mut commands: Commands,
     mut query: Query<(&Character, &mut Transform, &mut Todo)>,
+    mineable_query: Query<(&Transform, &Body), (With<Mineable>, Without<Character>)>,
     mut exploration_history_query: Query<&mut ExplorationHistory>,
     world_query: Query<&World>,
     mut map_query: Query<&mut Map>,
+    atlas: Res<Atlas>,
+    asset_server: Res<AssetServer>,
+    game_config: Res<GameConfiguration>,
 ) {
     if world_query.is_empty() || exploration_history_query.is_empty() || map_query.is_empty() {
         return;
@@ -45,13 +60,50 @@ pub fn do_task_work(
                     }
                 }
                 Task::Mine(mining_target) => {
+                    // TODO: I need to spawn rocks and they can be... rockables? RockProviders?
+                    // Unsure exactly but they will let characters pick up rocks so they can be
+                    // stockpiled, and eventually used for building.
                     if let Some(entity) = mining_target.entity {
-                        commands.entity(entity).despawn();
-                        mining_target.entity = None;
-                        if let Some(layer) = &mining_target.layer_type {
-                            map.current
-                                .grid_mut()
-                                .remove_layer(&mining_target.coordinate, *layer);
+                        if let Ok((transform, body)) = mineable_query.get(entity) {
+                            commands.entity(entity).despawn();
+                            mining_target.entity = None;
+
+                            if let Some(layer) = &mining_target.layer_type {
+                                map.current
+                                    .grid_mut()
+                                    .remove_layer(&mining_target.coordinate, *layer);
+                            }
+
+                            if let Some(structure_config) =
+                                game_config.structure_config_by_key("rubble")
+                            {
+                                if let Some(wall_sprite) = structure_config.max_health_sprite() {
+                                    let handle = asset_server.get_handle(&wall_sprite.path);
+                                    let texture_index =
+                                        atlas.texture_atlas.get_texture_index(&handle).unwrap();
+                                    commands
+                                        .spawn(SpriteSheetBundle {
+                                            transform: Transform {
+                                                translation: transform.translation,
+                                                scale: Vec3::splat(game_config.tile_scale()),
+                                                ..default()
+                                            },
+                                            sprite: TextureAtlasSprite::new(texture_index),
+                                            texture_atlas: atlas.atlas_handle.clone(),
+                                            visibility: Visibility { is_visible: false },
+                                            ..default()
+                                        })
+                                        .insert(Structure {
+                                            layer_type: LayerType::Structure(StructureType::Rubble),
+                                        })
+                                        .insert(Body {
+                                            tile_size: game_config.tile_size(),
+                                            cell_center: transform.translation.truncate(),
+                                            underground: false,
+                                            center_coordinate: body.center_coordinate,
+                                        });
+                                }
+                            }
                         }
                     }
                 }
