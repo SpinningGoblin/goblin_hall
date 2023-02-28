@@ -6,6 +6,7 @@ pub enum Labels {
     Input,
     InputResponse,
     CharacterJobs,
+    CharacterCleanup,
     Tick,
 }
 

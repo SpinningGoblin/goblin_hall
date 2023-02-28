@@ -41,12 +41,14 @@ fn main() {
 
     let character_job_set = SystemSet::on_update(AppState::InGame)
         .label(Labels::CharacterJobs)
+        .after(Labels::Tick)
         .with_system(systems::jobs::assign_job)
         .with_system(systems::tasks::build_todo)
         .with_system(systems::tasks::do_task_work)
         .with_system(systems::tasks::remove_todo);
 
-    let cleanup_set = SystemSet::on_update(AppState::InGame)
+    let character_cleanup_set = SystemSet::on_update(AppState::InGame)
+        .label(Labels::CharacterCleanup)
         .after(Labels::CharacterJobs)
         .with_system(systems::characters::show_in_visible_area);
 
@@ -67,6 +69,6 @@ fn main() {
         .add_system_set(input_responses)
         .add_system_set(tick_set)
         .add_system_set(character_job_set)
-        .add_system_set(cleanup_set)
+        .add_system_set(character_cleanup_set)
         .run();
 }
