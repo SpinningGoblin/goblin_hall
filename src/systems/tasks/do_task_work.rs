@@ -18,10 +18,14 @@ use crate::{
     resources::{config::GameConfiguration, sprites::Atlas},
 };
 
+type NotMineableCharacter = (With<Mineable>, Without<Character>);
+type TransformBody = (&'static Transform, &'static Body);
+
+#[allow(clippy::too_many_arguments)]
 pub fn do_task_work(
     mut commands: Commands,
     mut query: Query<(&Character, &mut Transform, &mut Todo)>,
-    mineable_query: Query<(&Transform, &Body), (With<Mineable>, Without<Character>)>,
+    mineable_query: Query<TransformBody, NotMineableCharacter>,
     mut exploration_history_query: Query<&mut ExplorationHistory>,
     world_query: Query<&World>,
     mut map_query: Query<&mut Map>,
