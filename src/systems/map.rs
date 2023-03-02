@@ -9,7 +9,7 @@ use crate::{
         characters::Character,
         jobs::ExplorationHistory,
         movement::CameraMoveTimer,
-        structures::{Body, Mineable, Structure},
+        structures::{GridBody, Mineable, Structure},
         Map, World,
     },
     resources::{
@@ -57,10 +57,7 @@ pub fn spawn_starting(
                                 visibility: Visibility { is_visible: false },
                                 ..default()
                             })
-                            .insert(Body {
-                                tile_size: game_config.tile_size(),
-                                cell_center: position.truncate(),
-                                underground: false,
+                            .insert(GridBody {
                                 center_coordinate: *cell.coordinate(),
                             });
                     }
@@ -90,10 +87,7 @@ pub fn spawn_starting(
                                 .insert(Mineable {
                                     layer_type: LayerType::Structure(StructureType::Wall),
                                 })
-                                .insert(Body {
-                                    tile_size: game_config.tile_size(),
-                                    cell_center: position.truncate(),
-                                    underground: false,
+                                .insert(GridBody {
                                     center_coordinate: *cell.coordinate(),
                                 });
                         }
@@ -115,10 +109,7 @@ pub fn spawn_starting(
                                 visibility: Visibility { is_visible: false },
                                 ..default()
                             })
-                            .insert(Body {
-                                tile_size: game_config.tile_size(),
-                                cell_center: position.truncate(),
-                                underground: false,
+                            .insert(GridBody {
                                 center_coordinate: *cell.coordinate(),
                             });
                     }
@@ -142,10 +133,7 @@ pub fn spawn_starting(
                             .insert(Structure {
                                 layer_type: LayerType::Structure(StructureType::Wall),
                             })
-                            .insert(Body {
-                                tile_size: game_config.tile_size(),
-                                cell_center: position.truncate(),
-                                underground: false,
+                            .insert(GridBody {
                                 center_coordinate: *cell.coordinate(),
                             });
                     }
@@ -173,10 +161,7 @@ pub fn spawn_starting(
                                 .insert(Structure {
                                     layer_type: LayerType::Structure(StructureType::Boulder),
                                 })
-                                .insert(Body {
-                                    tile_size: game_config.tile_size(),
-                                    cell_center: position.truncate(),
-                                    underground: false,
+                                .insert(GridBody {
                                     center_coordinate: *cell.coordinate(),
                                 });
                         }
@@ -203,10 +188,7 @@ pub fn spawn_starting(
                                 .insert(Structure {
                                     layer_type: LayerType::Structure(StructureType::Rubble),
                                 })
-                                .insert(Body {
-                                    tile_size: game_config.tile_size(),
-                                    cell_center: position.truncate(),
-                                    underground: false,
+                                .insert(GridBody {
                                     center_coordinate: *cell.coordinate(),
                                 });
                         }
@@ -230,10 +212,7 @@ pub fn spawn_starting(
                                     visibility: Visibility { is_visible: false },
                                     ..default()
                                 })
-                                .insert(Body {
-                                    tile_size: game_config.tile_size(),
-                                    cell_center: position.truncate(),
-                                    underground: false,
+                                .insert(GridBody {
                                     center_coordinate: *cell.coordinate(),
                                 });
                         }

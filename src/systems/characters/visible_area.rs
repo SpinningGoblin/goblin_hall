@@ -1,13 +1,13 @@
 use bevy::prelude::{Query, Transform, Visibility, With};
 
 use crate::{
-    components::{characters::Character, structures::Body, GridBox, Map},
+    components::{characters::Character, structures::GridBody, GridBox, Map},
     resources::config::grid::grid_coordinate_from_world,
 };
 
 pub fn show_in_visible_area(
     query: Query<&Transform, With<Character>>,
-    mut visible_bodies: Query<(&mut Visibility, &Body)>,
+    mut visible_bodies: Query<(&mut Visibility, &GridBody)>,
     map_query: Query<&Map>,
 ) {
     if map_query.is_empty() {

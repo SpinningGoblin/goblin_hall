@@ -7,7 +7,7 @@ use bevy::{
 };
 
 use crate::{
-    components::{structures::Body, target::MouseTarget, zones::Zone, Map},
+    components::{structures::GridBody, target::MouseTarget, zones::Zone, Map},
     resources::{
         config::{grid::grid_coordinate_from_world, GameConfiguration},
         sprites::Atlas,
@@ -58,10 +58,7 @@ pub fn place_zone(
             ..default()
         })
         .insert(Zone)
-        .insert(Body {
-            tile_size: map.tile_size,
-            cell_center: point,
+        .insert(GridBody {
             center_coordinate: coordinate,
-            underground: false,
         });
 }

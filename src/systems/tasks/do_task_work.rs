@@ -11,7 +11,7 @@ use crate::{
     components::{
         characters::Character,
         jobs::ExplorationHistory,
-        structures::{Body, Mineable, Structure},
+        structures::{GridBody, Mineable, Structure},
         tasks::{Task, Todo},
         Map, World,
     },
@@ -19,7 +19,7 @@ use crate::{
 };
 
 type NotMineableCharacter = (With<Mineable>, Without<Character>);
-type TransformBody = (&'static Transform, &'static Body);
+type TransformBody = (&'static Transform, &'static GridBody);
 
 #[allow(clippy::too_many_arguments)]
 pub fn do_task_work(
@@ -100,10 +100,7 @@ pub fn do_task_work(
                                         .insert(Structure {
                                             layer_type: LayerType::Structure(StructureType::Rubble),
                                         })
-                                        .insert(Body {
-                                            tile_size: game_config.tile_size(),
-                                            cell_center: transform.translation.truncate(),
-                                            underground: false,
+                                        .insert(GridBody {
                                             center_coordinate: body.center_coordinate,
                                         });
                                 }

@@ -4,7 +4,7 @@ use crate::{
     components::{
         characters::Character,
         jobs::Job,
-        structures::{Body, Mineable},
+        structures::{GridBody, Mineable},
         Map, World,
     },
     resources::config::grid::grid_coordinate_from_world,
@@ -13,7 +13,7 @@ use crate::{
 pub fn assign_job(
     mut commands: Commands,
     query: Query<(&Character, &Transform, Entity), Without<Job>>,
-    structure_query: Query<(&Mineable, &Body)>,
+    structure_query: Query<(&Mineable, &GridBody)>,
     map_query: Query<&Map>,
     world_query: Query<&World>,
 ) {
@@ -45,7 +45,7 @@ pub fn assign_job(
         let structures_in_range = structure_query
             .iter()
             .filter(|(_, body)| visibility_box.contains(&body.center_coordinate))
-            .collect::<Vec<(&Mineable, &Body)>>();
+            .collect::<Vec<(&Mineable, &GridBody)>>();
 
         if structures_in_range.is_empty() {
             commands.entity(entity).insert(Job::Explorer);

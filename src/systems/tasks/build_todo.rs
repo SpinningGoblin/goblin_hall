@@ -10,7 +10,7 @@ use crate::{
         characters::Character,
         jobs::{ExplorationHistory, Job, PreviousJob},
         movement::{Direction, ExplorationTarget, Path, VisitedPoint},
-        structures::{Body, Mineable, MiningTarget},
+        structures::{GridBody, Mineable, MiningTarget},
         tasks::{Task, Todo},
         zones::Zone,
         GridBox, Map, World,
@@ -29,11 +29,11 @@ type JobsComponents = (
 pub fn build_todo(
     mut commands: Commands,
     query: Query<JobsComponents, Without<Todo>>,
-    mineable_query: Query<(&Mineable, &Body, Entity)>,
+    mineable_query: Query<(&Mineable, &GridBody, Entity)>,
     map_query: Query<&Map>,
     world_query: Query<&World>,
     explore_history_query: Query<&ExplorationHistory>,
-    exploration_zone_query: Query<(&Zone, &Body, Entity)>,
+    exploration_zone_query: Query<(&Zone, &GridBody, Entity)>,
 ) {
     if map_query.is_empty() || world_query.is_empty() || explore_history_query.is_empty() {
         return;
@@ -48,7 +48,7 @@ pub fn build_todo(
     let exploration_history = explore_history_query.single();
 
     let mut used_directions: Vec<Direction> = Vec::new();
-    let exploration_zones: Vec<(&Body, Entity)> = exploration_zone_query
+    let exploration_zones: Vec<(&GridBody, Entity)> = exploration_zone_query
         .iter()
         .map(|(_, body, entity)| (body, entity))
         .collect();
@@ -101,10 +101,10 @@ pub fn build_todo(
 
 fn build_miner_todo(
     visibility_box: &GridBox,
-    mineable_query: &Query<(&Mineable, &Body, Entity)>,
+    mineable_query: &Query<(&Mineable, &GridBody, Entity)>,
     map: &Map,
 ) -> Option<Todo> {
-    let mut seen_structures: Vec<(&Mineable, &Body, Entity)> = mineable_query
+    let mut seen_structures: Vec<(&Mineable, &GridBody, Entity)> = mineable_query
         .iter()
         .filter(|(structure, body, _)| {
             is_wall(&structure.layer_type) && visibility_box.contains(&body.center_coordinate)
@@ -155,7 +155,7 @@ fn build_explore_todo(
     visibility_box: &GridBox,
     possible_previous_job: Option<&PreviousJob>,
     exploration_history: &ExplorationHistory,
-    exploration_zone: Option<&(&Body, Entity)>,
+    exploration_zone: Option<&(&GridBody, Entity)>,
 ) -> Option<Todo> {
     let todo = if let Some((body, entity)) = exploration_zone {
         path_to_point(map, &visibility_box.center, &body.center_coordinate).map(|path| Todo {
