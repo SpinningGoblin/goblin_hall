@@ -54,7 +54,7 @@ pub fn spawn_starting(
                                 },
                                 sprite: TextureAtlasSprite::new(texture_index),
                                 texture_atlas: atlas.atlas_handle.clone(),
-                                visibility: Visibility { is_visible: false },
+                                visibility: Visibility::Hidden,
                                 ..default()
                             })
                             .insert(GridBody {
@@ -78,7 +78,7 @@ pub fn spawn_starting(
                                     },
                                     sprite: TextureAtlasSprite::new(texture_index),
                                     texture_atlas: atlas.atlas_handle.clone(),
-                                    visibility: Visibility { is_visible: false },
+                                    visibility: Visibility::Hidden,
                                     ..default()
                                 })
                                 .insert(Structure {
@@ -106,7 +106,7 @@ pub fn spawn_starting(
                                 },
                                 sprite: TextureAtlasSprite::new(texture_index),
                                 texture_atlas: atlas.atlas_handle.clone(),
-                                visibility: Visibility { is_visible: false },
+                                visibility: Visibility::Hidden,
                                 ..default()
                             })
                             .insert(GridBody {
@@ -127,7 +127,7 @@ pub fn spawn_starting(
                                 },
                                 sprite: TextureAtlasSprite::new(texture_index),
                                 texture_atlas: atlas.atlas_handle.clone(),
-                                visibility: Visibility { is_visible: false },
+                                visibility: Visibility::Hidden,
                                 ..default()
                             })
                             .insert(Structure {
@@ -155,7 +155,7 @@ pub fn spawn_starting(
                                     },
                                     sprite: TextureAtlasSprite::new(texture_index),
                                     texture_atlas: atlas.atlas_handle.clone(),
-                                    visibility: Visibility { is_visible: false },
+                                    visibility: Visibility::Hidden,
                                     ..default()
                                 })
                                 .insert(Structure {
@@ -182,7 +182,7 @@ pub fn spawn_starting(
                                     },
                                     sprite: TextureAtlasSprite::new(texture_index),
                                     texture_atlas: atlas.atlas_handle.clone(),
-                                    visibility: Visibility { is_visible: false },
+                                    visibility: Visibility::Hidden,
                                     ..default()
                                 })
                                 .insert(Structure {
@@ -209,7 +209,7 @@ pub fn spawn_starting(
                                     },
                                     sprite: TextureAtlasSprite::new(texture_index),
                                     texture_atlas: atlas.atlas_handle.clone(),
-                                    visibility: Visibility { is_visible: false },
+                                    visibility: Visibility::Hidden,
                                     ..default()
                                 })
                                 .insert(GridBody {

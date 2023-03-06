@@ -29,7 +29,7 @@ pub fn place_zone(
 
     let (target_transform, visibility) = target_query.single();
 
-    if !visibility.is_visible {
+    if visibility == Visibility::Hidden {
         return;
     }
 

@@ -1,7 +1,6 @@
 use bevy::{
-    prelude::{Camera, GlobalTransform, Query, Res, Transform, Vec2, Visibility, With},
-    render::camera::RenderTarget,
-    window::Windows,
+    prelude::{Camera, GlobalTransform, Query, Transform, Vec2, Visibility, With},
+    window::{PrimaryWindow, Window},
 };
 
 use crate::{
@@ -10,7 +9,7 @@ use crate::{
 };
 
 pub fn move_target(
-    windows: Res<Windows>,
+    windows: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform), With<GameCamera>>,
     mut target_query: Query<(&mut Transform, &mut Visibility), With<MouseTarget>>,
     map_query: Query<&Map>,
@@ -24,11 +23,8 @@ pub fn move_target(
     let (camera, camera_transform) = camera_query.single();
     let (mut target_transform, mut target_visibility) = target_query.single_mut();
 
-    // get the window that the camera is displaying to (or the primary window)
-    let window = if let RenderTarget::Window(id) = camera.target {
-        windows.get(id).unwrap()
-    } else {
-        windows.get_primary().unwrap()
+    let Ok(window) = windows.get_single() else {
+        return;
     };
 
     let map = map_query.single();
@@ -51,11 +47,11 @@ pub fn move_target(
         let grid_coords =
             grid_coordinate_from_world(&world_coordinate, map.grid_size, map.tile_size);
         let new_position = world_coordinate_from_grid(&grid_coords, map.grid_size, map.tile_size);
-        target_visibility.is_visible = true;
+        *target_visibility = Visibility::Inherited;
         target_transform.translation.x = new_position.x;
         target_transform.translation.y = new_position.y;
         target_transform.translation.z = 2.0;
     } else {
-        target_visibility.is_visible = false;
+        *target_visibility = Visibility::Hidden;
     }
 }

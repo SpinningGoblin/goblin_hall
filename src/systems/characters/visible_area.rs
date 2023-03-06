@@ -37,6 +37,6 @@ pub fn show_in_visible_area(
             .any(|visibility_box| visibility_box.contains(&body.center_coordinate))
     }) {
         let (mut visibility, _) = visibility_bundle;
-        visibility.is_visible = true;
+        *visibility = Visibility::Inherited;
     }
 }
