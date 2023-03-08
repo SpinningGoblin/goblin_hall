@@ -1,7 +1,7 @@
 use bevy::{
     prelude::{
         App, ImagePlugin, IntoSystemAppConfig, IntoSystemAppConfigs, IntoSystemConfig,
-        IntoSystemConfigs, OnEnter, OnExit, OnUpdate, PluginGroup,
+        IntoSystemConfigs, IntoSystemSetConfig, OnEnter, OnExit, OnUpdate, PluginGroup,
     },
     window::close_on_esc,
     DefaultPlugins,
@@ -24,7 +24,10 @@ fn main() {
     app.init_resource::<Handles>()
         .insert_resource(game_config.world_timer())
         .insert_resource(game_config)
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()));
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .configure_set(Sets::CharacterJobs.after(Sets::Tick))
+        .configure_set(Sets::CharacterCleanup.after(Sets::CharacterJobs))
+        .configure_set(Sets::InputResponse.after(Sets::Input));
 
     let input_set = (
         systems::camera::process_movement_input,
@@ -36,7 +39,6 @@ fn main() {
 
     let input_responses = (systems::zones::place_zone, systems::camera::move_camera)
         .in_set(OnUpdate(AppState::InGame))
-        .after(Sets::Input)
         .in_set(Sets::InputResponse);
 
     let tick_set = (systems::world::tick_game_world)
@@ -49,12 +51,10 @@ fn main() {
         systems::tasks::do_task_work,
         systems::tasks::remove_todo,
     )
-        .after(Sets::Tick)
         .in_set(Sets::CharacterJobs)
         .in_set(OnUpdate(AppState::InGame));
 
     let character_cleanup_set = (systems::characters::show_in_visible_area)
-        .after(Sets::CharacterJobs)
         .in_set(OnUpdate(AppState::InGame))
         .in_set(Sets::CharacterCleanup);
 
