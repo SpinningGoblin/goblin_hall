@@ -5,7 +5,7 @@ use crate::{
         characters::Character,
         jobs::Job,
         structures::{GridBody, Mineable},
-        Map, World,
+        Map,
     },
     resources::config::grid::grid_coordinate_from_world,
 };
@@ -15,14 +15,8 @@ pub fn assign_job(
     query: Query<(&Character, &Transform, Entity), Without<Job>>,
     structure_query: Query<(&Mineable, &GridBody)>,
     map_query: Query<&Map>,
-    world_query: Query<&World>,
 ) {
-    if world_query.is_empty() || map_query.is_empty() {
-        return;
-    }
-
-    let world = world_query.single();
-    if !world.tick_just_finished {
+    if map_query.is_empty() {
         return;
     }
 

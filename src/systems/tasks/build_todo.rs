@@ -13,7 +13,7 @@ use crate::{
         structures::{GridBody, Mineable, MiningTarget},
         tasks::{Task, Todo},
         zones::Zone,
-        GridBox, Map, World,
+        GridBox, Map,
     },
     resources::config::grid::{grid_coordinate_from_world, pathfind},
 };
@@ -31,16 +31,10 @@ pub fn build_todo(
     query: Query<JobsComponents, Without<Todo>>,
     mineable_query: Query<(&Mineable, &GridBody, Entity)>,
     map_query: Query<&Map>,
-    world_query: Query<&World>,
     explore_history_query: Query<&ExplorationHistory>,
     exploration_zone_query: Query<(&Zone, &GridBody, Entity)>,
 ) {
-    if map_query.is_empty() || world_query.is_empty() || explore_history_query.is_empty() {
-        return;
-    }
-
-    let world = world_query.single();
-    if !world.tick_just_finished {
+    if map_query.is_empty() || explore_history_query.is_empty() {
         return;
     }
 
