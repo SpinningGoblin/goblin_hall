@@ -21,3 +21,10 @@ pub fn tick_game_world(
         info!("world tick finished")
     }
 }
+
+pub fn tick_just_finished(world_query: Query<&World>) -> bool {
+    match world_query.get_single() {
+        Ok(world) => world.tick_just_finished,
+        _ => false,
+    }
+}
