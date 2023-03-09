@@ -26,7 +26,7 @@ fn main() {
         .insert_resource(game_config)
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .configure_set(Sets::CharacterJobs.after(Sets::Tick))
-        .configure_set(Sets::CharacterCleanup.after(Sets::CharacterJobs))
+        .configure_set(Sets::Finishing.after(Sets::CharacterJobs))
         .configure_set(Sets::InputResponse.after(Sets::Input));
 
     let input_set = (
@@ -46,17 +46,24 @@ fn main() {
         .in_set(Sets::Tick);
 
     let character_job_set = (
-        systems::jobs::assign_job,
-        systems::tasks::build_todo,
-        systems::tasks::do_task_work,
+        systems::jobs::assign_job.run_if(systems::world::tick_just_finished),
+        systems::tasks::build_todo.run_if(systems::world::tick_just_finished),
+        systems::tasks::do_task_work.run_if(systems::world::tick_just_finished),
         systems::tasks::remove_todo,
     )
         .in_set(Sets::CharacterJobs)
         .in_set(OnUpdate(AppState::InGame));
 
-    let character_cleanup_set = (systems::characters::show_in_visible_area)
+    let finishing_set = (
+        systems::characters::show_in_visible_area,
+        systems::spawns::characters,
+        systems::spawns::map,
+        systems::spawns::clear
+            .after(systems::spawns::characters)
+            .after(systems::spawns::map),
+    )
         .in_set(OnUpdate(AppState::InGame))
-        .in_set(Sets::CharacterCleanup);
+        .in_set(Sets::Finishing);
 
     let starting_spawns = (
         systems::targets::spawn,
@@ -72,7 +79,7 @@ fn main() {
         .add_systems(input_responses)
         .add_system(tick_set)
         .add_systems(character_job_set)
-        .add_system(character_cleanup_set)
+        .add_systems(finishing_set)
         .add_system(textures::load.in_schedule(OnEnter(AppState::Startup)))
         .add_system(textures::check.in_set(OnUpdate(AppState::Startup)))
         .add_system(

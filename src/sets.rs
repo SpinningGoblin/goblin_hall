@@ -6,7 +6,7 @@ pub enum Sets {
     Input,
     InputResponse,
     CharacterJobs,
-    CharacterCleanup,
+    Finishing,
     Tick,
 }
 
