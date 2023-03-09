@@ -2,6 +2,7 @@ pub mod camera;
 pub mod characters;
 pub mod jobs;
 pub mod map;
+pub mod spawns;
 pub mod targets;
 pub mod tasks;
 pub mod textures;
