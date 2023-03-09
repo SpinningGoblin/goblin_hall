@@ -1,28 +1,18 @@
-use bevy::{
-    prelude::{default, info, AssetServer, Commands, Res, ResMut, Transform, Vec3, Visibility},
-    sprite::{SpriteSheetBundle, TextureAtlasSprite},
-};
-use tdlg::map::layers::{FloorType, LayerType, StructureType};
+use bevy::prelude::{Commands, Query, ResMut, Visibility};
 
 use crate::{
     components::{
-        characters::Character,
-        jobs::ExplorationHistory,
-        movement::CameraMoveTimer,
-        structures::{GridBody, Mineable, Structure},
-        Map, World,
+        jobs::ExplorationHistory, movement::CameraMoveTimer, CharacterSpawnable, CharacterSpawns,
+        Map, MapSpawnable, MapSpawns, SpawnCoordinate, World,
     },
-    resources::{
-        config::{grid::world_coordinate_from_grid, GameConfiguration},
-        sprites::Atlas,
-    },
+    resources::config::GameConfiguration,
 };
 
 pub fn spawn_starting(
     mut commands: Commands,
-    atlas: Res<Atlas>,
-    asset_server: Res<AssetServer>,
     mut game_config: ResMut<GameConfiguration>,
+    mut character_spawns_query: Query<&mut CharacterSpawns>,
+    mut map_spawns_query: Query<&mut MapSpawns>,
 ) {
     commands.spawn(World::default());
     commands.spawn(CameraMoveTimer {
@@ -32,242 +22,48 @@ pub fn spawn_starting(
     commands.spawn(ExplorationHistory::default());
 
     let top_down_map = game_config.generate_top_down_map();
+    let mut map_spawnables: Vec<MapSpawnable> = Vec::new();
     for cell in top_down_map.grid().cells() {
-        let coordinate = world_coordinate_from_grid(
-            cell.coordinate(),
-            game_config.grid_size().get(),
-            game_config.tile_size(),
-        );
         for (index, layer) in cell.layers().iter().enumerate() {
-            let position = Vec3::new(coordinate.x, coordinate.y, index as f32);
-            match *layer {
-                LayerType::Floor(FloorType::Outdoor) => {
-                    if let Some(floor_sprite) = game_config.random_floor_sprite("cave_floor") {
-                        let handle = asset_server.get_handle(&floor_sprite.path);
-                        let texture_index = atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                        commands
-                            .spawn(SpriteSheetBundle {
-                                transform: Transform {
-                                    translation: position,
-                                    scale: Vec3::splat(game_config.tile_scale()),
-                                    ..default()
-                                },
-                                sprite: TextureAtlasSprite::new(texture_index),
-                                texture_atlas: atlas.atlas_handle.clone(),
-                                visibility: Visibility::Hidden,
-                                ..default()
-                            })
-                            .insert(GridBody {
-                                center_coordinate: *cell.coordinate(),
-                            });
-                    }
-                }
-                LayerType::Structure(StructureType::Wall) => {
-                    if let Some(structure_config) = game_config.structure_config_by_key("room_wall")
-                    {
-                        if let Some(wall_sprite) = structure_config.max_health_sprite() {
-                            let handle = asset_server.get_handle(&wall_sprite.path);
-                            let texture_index =
-                                atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                            commands
-                                .spawn(SpriteSheetBundle {
-                                    transform: Transform {
-                                        translation: position,
-                                        scale: Vec3::splat(game_config.tile_scale()),
-                                        ..default()
-                                    },
-                                    sprite: TextureAtlasSprite::new(texture_index),
-                                    texture_atlas: atlas.atlas_handle.clone(),
-                                    visibility: Visibility::Hidden,
-                                    ..default()
-                                })
-                                .insert(Structure {
-                                    layer_type: LayerType::Structure(StructureType::Wall),
-                                })
-                                .insert(Mineable {
-                                    layer_type: LayerType::Structure(StructureType::Wall),
-                                })
-                                .insert(GridBody {
-                                    center_coordinate: *cell.coordinate(),
-                                });
-                        }
-                    }
-                }
-                LayerType::Floor(FloorType::Indoor) => {
-                    if let Some(floor_sprite) = game_config.random_floor_sprite("dirt_floor") {
-                        let handle = asset_server.get_handle(&floor_sprite.path);
-                        let texture_index = atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                        commands
-                            .spawn(SpriteSheetBundle {
-                                transform: Transform {
-                                    translation: position,
-                                    scale: Vec3::splat(game_config.tile_scale()),
-                                    ..default()
-                                },
-                                sprite: TextureAtlasSprite::new(texture_index),
-                                texture_atlas: atlas.atlas_handle.clone(),
-                                visibility: Visibility::Hidden,
-                                ..default()
-                            })
-                            .insert(GridBody {
-                                center_coordinate: *cell.coordinate(),
-                            });
-                    }
-                }
-                LayerType::Structure(StructureType::Door) => {
-                    if let Some(floor_sprite) = game_config.random_floor_sprite("sand_floor") {
-                        let handle = asset_server.get_handle(&floor_sprite.path);
-                        let texture_index = atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                        commands
-                            .spawn(SpriteSheetBundle {
-                                transform: Transform {
-                                    translation: position,
-                                    scale: Vec3::splat(game_config.tile_scale()),
-                                    ..default()
-                                },
-                                sprite: TextureAtlasSprite::new(texture_index),
-                                texture_atlas: atlas.atlas_handle.clone(),
-                                visibility: Visibility::Hidden,
-                                ..default()
-                            })
-                            .insert(Structure {
-                                layer_type: LayerType::Structure(StructureType::Wall),
-                            })
-                            .insert(GridBody {
-                                center_coordinate: *cell.coordinate(),
-                            });
-                    }
-                }
-                LayerType::Structure(StructureType::Boulder) => {
-                    if let Some(structure_config) =
-                        game_config.structure_config_by_key("outer_wall")
-                    {
-                        if let Some(wall_sprite) = structure_config.max_health_sprite() {
-                            let handle = asset_server.get_handle(&wall_sprite.path);
-                            let texture_index =
-                                atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                            commands
-                                .spawn(SpriteSheetBundle {
-                                    transform: Transform {
-                                        translation: position,
-                                        scale: Vec3::splat(game_config.tile_scale()),
-                                        ..default()
-                                    },
-                                    sprite: TextureAtlasSprite::new(texture_index),
-                                    texture_atlas: atlas.atlas_handle.clone(),
-                                    visibility: Visibility::Hidden,
-                                    ..default()
-                                })
-                                .insert(Structure {
-                                    layer_type: LayerType::Structure(StructureType::Boulder),
-                                })
-                                .insert(GridBody {
-                                    center_coordinate: *cell.coordinate(),
-                                });
-                        }
-                    }
-                }
-                LayerType::Structure(StructureType::Rubble) => {
-                    if let Some(structure_config) = game_config.structure_config_by_key("rubble") {
-                        if let Some(wall_sprite) = structure_config.max_health_sprite() {
-                            let handle = asset_server.get_handle(&wall_sprite.path);
-                            let texture_index =
-                                atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                            commands
-                                .spawn(SpriteSheetBundle {
-                                    transform: Transform {
-                                        translation: position,
-                                        scale: Vec3::splat(game_config.tile_scale()),
-                                        ..default()
-                                    },
-                                    sprite: TextureAtlasSprite::new(texture_index),
-                                    texture_atlas: atlas.atlas_handle.clone(),
-                                    visibility: Visibility::Hidden,
-                                    ..default()
-                                })
-                                .insert(Structure {
-                                    layer_type: LayerType::Structure(StructureType::Rubble),
-                                })
-                                .insert(GridBody {
-                                    center_coordinate: *cell.coordinate(),
-                                });
-                        }
-                    }
-                }
-                LayerType::Structure(StructureType::Table) => {
-                    if let Some(structure_config) = game_config.structure_config_by_key("table") {
-                        if let Some(wall_sprite) = structure_config.max_health_sprite() {
-                            let handle = asset_server.get_handle(&wall_sprite.path);
-                            let texture_index =
-                                atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                            commands
-                                .spawn(SpriteSheetBundle {
-                                    transform: Transform {
-                                        translation: position,
-                                        scale: Vec3::splat(game_config.tile_scale()),
-                                        ..default()
-                                    },
-                                    sprite: TextureAtlasSprite::new(texture_index),
-                                    texture_atlas: atlas.atlas_handle.clone(),
-                                    visibility: Visibility::Hidden,
-                                    ..default()
-                                })
-                                .insert(GridBody {
-                                    center_coordinate: *cell.coordinate(),
-                                });
-                        }
-                    }
-                }
-                LayerType::Note => {
-                    info!("Note {} {:?}", index, &cell.coordinate());
-                }
-                LayerType::Item(rarity) => {
-                    info!(
-                        "common item {} {:?} {:?}",
-                        index,
-                        &cell.coordinate(),
-                        rarity
-                    );
-                }
-                LayerType::Structure(it) => {
-                    info!("structure {:?} {:?}", &cell.coordinate(), it);
-                }
-                LayerType::Empty | LayerType::Entrance | LayerType::Exit | LayerType::Path => {}
-            }
+            map_spawnables.push(MapSpawnable {
+                layer_type: *layer,
+                spawn_coordinate: SpawnCoordinate {
+                    coordinate: *cell.coordinate(),
+                    z_level: index as f32,
+                },
+                visibility: Visibility::Hidden,
+            });
         }
     }
 
-    if let Some(character_config) = game_config.character_config("little_goblin") {
-        let goblin_handle = asset_server.get_handle(&character_config.sprite.path);
-        let target_index = atlas
-            .texture_atlas
-            .get_texture_index(&goblin_handle)
-            .unwrap();
-        let coordinate = world_coordinate_from_grid(
-            top_down_map.entry(),
-            game_config.grid_size().get(),
-            game_config.tile_size(),
-        );
-        info!("entry {:?}", top_down_map.entry());
-        commands
-            .spawn(SpriteSheetBundle {
-                transform: Transform {
-                    translation: Vec3::new(coordinate.x, coordinate.y, 10.0),
-                    scale: Vec3::splat(game_config.tile_scale()),
-                    ..default()
-                },
-                sprite: TextureAtlasSprite::new(target_index),
-                texture_atlas: atlas.atlas_handle.clone(),
-                ..default()
-            })
-            .insert(Character {
-                visibility: character_config.visibility,
+    let spawnable = CharacterSpawnable {
+        spawn_type: crate::components::characters::CreatureType::Goblin,
+        coordinate: SpawnCoordinate {
+            coordinate: *top_down_map.entry(),
+            z_level: 10.,
+        },
+    };
+    match character_spawns_query.get_single_mut() {
+        Ok(mut character_spawns) => character_spawns.spawnables.push(spawnable),
+        Err(_) => {
+            commands.spawn(CharacterSpawns {
+                spawnables: vec![spawnable],
             });
+        }
+    };
 
-        commands.spawn(Map {
-            current: top_down_map,
-            tile_size: game_config.tile_size(),
-            grid_size: game_config.grid_size().get(),
-        });
-    }
+    match map_spawns_query.get_single_mut() {
+        Ok(mut map_spawns) => map_spawns.spawnables.append(&mut map_spawnables),
+        Err(_) => {
+            commands.spawn(MapSpawns {
+                spawnables: map_spawnables,
+            });
+        }
+    };
+
+    commands.spawn(Map {
+        current: top_down_map,
+        tile_size: game_config.tile_size(),
+        grid_size: game_config.grid_size().get(),
+    });
 }

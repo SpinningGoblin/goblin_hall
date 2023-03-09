@@ -1,50 +1,34 @@
-use bevy::{
-    prelude::{
-        default, info, AssetServer, Commands, Query, Res, Transform, Vec3, Visibility, With,
-        Without,
-    },
-    sprite::{SpriteSheetBundle, TextureAtlasSprite},
-};
+use bevy::prelude::{info, Commands, Query, Transform, Visibility, With, Without};
 use tdlg::map::layers::{LayerType, StructureType};
 
-use crate::{
-    components::{
-        characters::Character,
-        jobs::ExplorationHistory,
-        structures::{GridBody, Mineable, Structure},
-        tasks::{Task, Todo},
-        Map, World,
-    },
-    resources::{config::GameConfiguration, sprites::Atlas},
+use crate::components::{
+    characters::Character,
+    jobs::ExplorationHistory,
+    structures::{GridBody, Mineable},
+    tasks::{Task, Todo},
+    Map, MapSpawnable, MapSpawns, SpawnCoordinate,
 };
 
 type NotMineableCharacter = (With<Mineable>, Without<Character>);
 type TransformBody = (&'static Transform, &'static GridBody);
 
-#[allow(clippy::too_many_arguments)]
 pub fn do_task_work(
     mut commands: Commands,
     mut query: Query<(&Character, &mut Transform, &mut Todo)>,
     mineable_query: Query<TransformBody, NotMineableCharacter>,
     mut exploration_history_query: Query<&mut ExplorationHistory>,
-    world_query: Query<&World>,
     mut map_query: Query<&mut Map>,
-    atlas: Res<Atlas>,
-    asset_server: Res<AssetServer>,
-    game_config: Res<GameConfiguration>,
+    mut map_spawns_query: Query<&mut MapSpawns>,
 ) {
-    if world_query.is_empty() || exploration_history_query.is_empty() || map_query.is_empty() {
+    let all_query_items = (
+        map_query.get_single_mut(),
+        exploration_history_query.get_single_mut(),
+        map_spawns_query.get_single_mut(),
+    );
+    let (Ok(mut map), Ok(mut exploration_history), Ok(mut map_spawns)) = all_query_items else {
         return;
-    }
+    };
 
-    let world = world_query.single();
-    if !world.tick_just_finished {
-        return;
-    }
-
-    let mut map = map_query.single_mut();
-
-    let mut exploration_history = exploration_history_query.single_mut();
     for character_bundle in query.iter_mut() {
         let (_, mut transform, mut todo) = character_bundle;
 
@@ -78,33 +62,14 @@ pub fn do_task_work(
                                     .remove_layer(&mining_target.coordinate, *layer);
                             }
 
-                            if let Some(structure_config) =
-                                game_config.structure_config_by_key("rubble")
-                            {
-                                if let Some(wall_sprite) = structure_config.max_health_sprite() {
-                                    let handle = asset_server.get_handle(&wall_sprite.path);
-                                    let texture_index =
-                                        atlas.texture_atlas.get_texture_index(&handle).unwrap();
-                                    commands
-                                        .spawn(SpriteSheetBundle {
-                                            transform: Transform {
-                                                translation: transform.translation,
-                                                scale: Vec3::splat(game_config.tile_scale()),
-                                                ..default()
-                                            },
-                                            sprite: TextureAtlasSprite::new(texture_index),
-                                            texture_atlas: atlas.atlas_handle.clone(),
-                                            visibility: Visibility::Hidden,
-                                            ..default()
-                                        })
-                                        .insert(Structure {
-                                            layer_type: LayerType::Structure(StructureType::Rubble),
-                                        })
-                                        .insert(GridBody {
-                                            center_coordinate: body.center_coordinate,
-                                        });
-                                }
-                            }
+                            map_spawns.spawnables.push(MapSpawnable {
+                                layer_type: LayerType::Structure(StructureType::Rubble),
+                                spawn_coordinate: SpawnCoordinate {
+                                    coordinate: body.center_coordinate,
+                                    z_level: transform.translation.z,
+                                },
+                                visibility: Visibility::Visible,
+                            });
                         }
                     }
                 }
