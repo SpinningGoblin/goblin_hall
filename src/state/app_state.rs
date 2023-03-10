@@ -1,13 +1,8 @@
 use bevy::prelude::States;
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, States)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, States, Default)]
 pub enum AppState {
+    #[default]
     Startup,
     InGame,
-}
-
-impl Default for AppState {
-    fn default() -> Self {
-        Self::Startup
-    }
 }
