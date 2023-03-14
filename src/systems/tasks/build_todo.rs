@@ -34,12 +34,9 @@ pub fn build_todo(
     explore_history_query: Query<&ExplorationHistory>,
     exploration_zone_query: Query<(&Zone, &GridBody, Entity)>,
 ) {
-    if map_query.is_empty() || explore_history_query.is_empty() {
+    let (Ok(map), Ok(exploration_history)) = (map_query.get_single(), explore_history_query.get_single()) else {
         return;
-    }
-
-    let map = map_query.single();
-    let exploration_history = explore_history_query.single();
+    };
 
     let mut used_directions: Vec<Direction> = Vec::new();
     let exploration_zones: Vec<(&GridBody, Entity)> = exploration_zone_query

@@ -1,4 +1,4 @@
-use bevy::prelude::{Input, KeyCode, Mut, Query, Res, Transform};
+use bevy::prelude::{Input, KeyCode, Query, Res, Transform};
 
 use crate::{components::cameras::GameCamera, resources::config::GameConfiguration};
 
@@ -7,11 +7,9 @@ pub fn zoom_camera(
     mut query: Query<(&GameCamera, &mut Transform)>,
     game_config: Res<GameConfiguration>,
 ) {
-    if query.is_empty() {
+    let Ok((_, mut transform)) = query.get_single_mut() else {
         return;
-    }
-
-    let (_, mut transform): (&GameCamera, Mut<Transform>) = query.single_mut();
+    };
 
     if keyboard_input.just_pressed(KeyCode::Equals) {
         if let Some(scale) = game_config.zoom_in_level(&transform.scale) {

@@ -10,11 +10,9 @@ pub fn tick_game_world(
     mut timer: ResMut<WorldTickTimer>,
     mut world_query: Query<&mut World>,
 ) {
-    if world_query.is_empty() {
+    let Ok(mut world) = world_query.get_single_mut() else {
         return;
-    }
-
-    let mut world = world_query.single_mut();
+    };
     world.tick_just_finished = timer.0.tick(time.delta()).just_finished();
 
     if world.tick_just_finished {

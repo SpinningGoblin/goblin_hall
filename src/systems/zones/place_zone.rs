@@ -23,21 +23,14 @@ pub fn place_zone(
     atlas: Res<Atlas>,
     asset_server: Res<AssetServer>,
 ) {
-    if target_query.is_empty() || !mouse_input.just_pressed(MouseButton::Left) {
+    let queries = (target_query.get_single(), map_query.get_single());
+    let (Ok((target_transform, visibility)), Ok(map)) = queries else {
+        return;
+    };
+
+    if !mouse_input.just_pressed(MouseButton::Left) || visibility == Visibility::Hidden {
         return;
     }
-
-    let (target_transform, visibility) = target_query.single();
-
-    if visibility == Visibility::Hidden {
-        return;
-    }
-
-    if map_query.is_empty() {
-        return;
-    }
-
-    let map = map_query.single();
 
     let target_handle = asset_server.get_handle(&game_config.zone().path);
     let target_index = atlas

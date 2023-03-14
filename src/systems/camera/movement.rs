@@ -1,4 +1,4 @@
-use bevy::prelude::{Local, Mut, Query, Transform, Without};
+use bevy::prelude::{Local, Query, Transform, Without};
 
 use crate::components::{
     cameras::{CameraMovement, GameCamera},
@@ -15,12 +15,10 @@ pub fn move_camera(
     character_query: Query<(&Character, &Transform), Without<GameCamera>>,
     mut moved_to_character_once: Local<MovedToCharacterOnce>,
 ) {
-    if query.is_empty() || character_query.is_empty() {
+    let queries = (query.get_single_mut(), character_query.get_single());
+    let (Ok((_, movement, mut transform)), Ok((_, character_transform))) = queries else {
         return;
-    }
-
-    let (_, movement, mut transform): (&GameCamera, &CameraMovement, Mut<Transform>) =
-        query.single_mut();
+    };
 
     let x = movement.speed.current.x + transform.translation.x;
     let y = movement.speed.current.y + transform.translation.y;
@@ -31,8 +29,6 @@ pub fn move_camera(
     if moved_to_character_once.moved {
         return;
     }
-
-    let (_, character_transform) = character_query.single();
 
     transform.translation.x = character_transform.translation.x;
     transform.translation.y = character_transform.translation.y;

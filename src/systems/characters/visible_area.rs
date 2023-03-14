@@ -10,11 +10,9 @@ pub fn show_in_visible_area(
     mut visible_bodies: Query<(&mut Visibility, &GridBody)>,
     map_query: Query<&Map>,
 ) {
-    if map_query.is_empty() {
+    let Ok(map) = map_query.get_single() else {
         return;
-    }
-
-    let map = map_query.single();
+    };
 
     let visibility_boxes: Vec<GridBox> = query
         .iter()

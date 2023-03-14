@@ -16,11 +16,9 @@ pub fn assign_job(
     structure_query: Query<(&Mineable, &GridBody)>,
     map_query: Query<&Map>,
 ) {
-    if map_query.is_empty() {
+    let Ok(map) = map_query.get_single() else {
         return;
-    }
-
-    let map = map_query.single();
+    };
 
     // I need to identify what needs to be done for each of the characters.
     // This will be based on the current state of the world and what they can see.

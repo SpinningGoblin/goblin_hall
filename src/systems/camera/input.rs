@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{Input, KeyCode, Mut, Query, Res, Transform, Vec2},
+    prelude::{Input, KeyCode, Query, Res, Transform, Vec2},
     time::Time,
 };
 
@@ -20,14 +20,10 @@ pub fn process_movement_input(
     game_config: Res<GameConfiguration>,
     mut timer_query: Query<&mut CameraMoveTimer>,
 ) {
-    if query.is_empty() || timer_query.is_empty() {
+    let queries = (query.get_single_mut(), timer_query.get_single_mut());
+    let (Ok((_, mut movement, transform)), Ok(mut camera_move_timer)) = queries else {
         return;
-    }
-
-    let (_, mut movement, transform): (&GameCamera, Mut<CameraMovement>, &Transform) =
-        query.single_mut();
-
-    let mut camera_move_timer = timer_query.single_mut();
+    };
 
     movement.speed.current = Vec2::ZERO;
     movement.direction = None;
