@@ -53,10 +53,11 @@ pub fn spawn_starting(
     };
 
     match map_spawns_query.get_single_mut() {
-        Ok(mut map_spawns) => map_spawns.spawnables.append(&mut map_spawnables),
+        Ok(mut map_spawns) => map_spawns.map_spawnables.append(&mut map_spawnables),
         Err(_) => {
             commands.spawn(MapSpawns {
-                spawnables: map_spawnables,
+                map_spawnables,
+                zone_spawnables: Vec::new(),
             });
         }
     };

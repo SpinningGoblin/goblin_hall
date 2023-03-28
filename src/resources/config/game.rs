@@ -7,7 +7,8 @@ use tdlg::{generation::Generator, map::TopDownMap};
 
 use super::{
     timers::WorldTickTimerConfig, CameraConfig, CharacterConfig, MovementConfig, MovementTimer,
-    SingleSprite, SpriteGroup, SpriteTileStats, StructureConfig, WorldTickTimer,
+    SingleSprite, SpriteGroup, SpriteTileStats, StructureConfig, WorldTickTimer, ZoneConfig,
+    ZonesConfig,
 };
 
 #[derive(Debug, Resource)]
@@ -17,6 +18,7 @@ pub struct GameConfiguration {
     pub structures: Vec<StructureConfig>,
     pub characters: Vec<CharacterConfig>,
     pub camera: CameraConfig,
+    pub zones_config: ZonesConfig,
     generator: Generator,
 }
 
@@ -27,6 +29,7 @@ impl GameConfiguration {
         structures: Vec<StructureConfig>,
         characters: Vec<CharacterConfig>,
         camera: CameraConfig,
+        zones: ZonesConfig,
     ) -> Self {
         let generator = tdlg::generation::builder()
             .seed(&basics.grid_generation.seed)
@@ -41,6 +44,7 @@ impl GameConfiguration {
             characters,
             camera,
             basics,
+            zones_config: zones,
         }
     }
 
@@ -109,12 +113,8 @@ impl GameConfiguration {
         self.camera.zoom_in_level(current)
     }
 
-    pub fn mouse_target(&self) -> &SingleSprite {
-        &self.basics.mouse_target
-    }
-
-    pub fn zone(&self) -> &SingleSprite {
-        &self.basics.zone
+    pub fn zone_config(&self, key: &str) -> Option<&ZoneConfig> {
+        self.zones_config.zones.iter().find(|zone| zone.key.eq(key))
     }
 }
 
@@ -123,7 +123,6 @@ pub struct GameBasics {
     tiles: SpriteTileStats,
     grid_generation: GridGeneration,
     movement: MovementConfig,
-    mouse_target: SingleSprite,
     zone: SingleSprite,
     world: WorldTickTimerConfig,
 }
@@ -170,11 +169,6 @@ mod tests {
             },
             movement: MovementConfig {
                 timer: MovementTimerConfig { wait_time: 0.2 },
-            },
-            mouse_target: SingleSprite {
-                key: "target".to_string(),
-                path: "outline.png".to_string(),
-                tile_stats: None,
             },
             zone: SingleSprite {
                 key: "zone".to_string(),

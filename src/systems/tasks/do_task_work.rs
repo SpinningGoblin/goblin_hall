@@ -6,7 +6,8 @@ use crate::components::{
     jobs::ExplorationHistory,
     structures::{GridBody, Mineable},
     tasks::{Task, Todo},
-    Map, MapSpawnable, MapSpawns, SpawnCoordinate,
+    zones::ZoneType,
+    Map, MapSpawnable, MapSpawns, SpawnCoordinate, ZoneSpawnable,
 };
 
 type NotMineableCharacter = (With<Mineable>, Without<Character>);
@@ -62,7 +63,7 @@ pub fn do_task_work(
                                     .remove_layer(&mining_target.coordinate, *layer);
                             }
 
-                            map_spawns.spawnables.push(MapSpawnable {
+                            map_spawns.map_spawnables.push(MapSpawnable {
                                 layer_type: LayerType::Structure(StructureType::Rubble),
                                 spawn_coordinate: SpawnCoordinate {
                                     coordinate: body.center_coordinate,
@@ -78,6 +79,16 @@ pub fn do_task_work(
                         commands.entity(entity).despawn();
                         exploration_target.entity = None;
                     }
+                }
+                Task::SetupStorageArea(ref mut setup_storage_area) => {
+                    setup_storage_area.done = true;
+                    map_spawns.zone_spawnables.push(ZoneSpawnable {
+                        spawn_coordinate: SpawnCoordinate {
+                            coordinate: setup_storage_area.coordinate,
+                            z_level: 10.0,
+                        },
+                        zone_type: ZoneType::StorageArea,
+                    })
                 }
             };
         }

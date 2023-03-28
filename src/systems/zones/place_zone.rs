@@ -7,7 +7,12 @@ use bevy::{
 };
 
 use crate::{
-    components::{structures::GridBody, target::MouseTarget, zones::Zone, Map},
+    components::{
+        structures::GridBody,
+        target::MouseTarget,
+        zones::{Zone, ZoneType},
+        Map,
+    },
     resources::{
         config::{grid::grid_coordinate_from_world, GameConfiguration},
         sprites::Atlas,
@@ -17,14 +22,14 @@ use crate::{
 pub fn place_zone(
     mut commands: Commands,
     mouse_input: Res<Input<MouseButton>>,
-    target_query: Query<(&Transform, &Visibility), With<MouseTarget>>,
+    target_query: Query<(&Transform, &Visibility, &ZoneType), With<MouseTarget>>,
     map_query: Query<&Map>,
     game_config: Res<GameConfiguration>,
     atlas: Res<Atlas>,
     asset_server: Res<AssetServer>,
 ) {
     let queries = (target_query.get_single(), map_query.get_single());
-    let (Ok((target_transform, visibility)), Ok(map)) = queries else {
+    let (Ok((target_transform, visibility, zone_type)), Ok(map)) = queries else {
         return;
     };
 
@@ -32,13 +37,19 @@ pub fn place_zone(
         return;
     }
 
-    let target_handle = asset_server.get_handle(&game_config.zone().path);
+    let point = target_transform.translation.truncate();
+    let coordinate = grid_coordinate_from_world(&point, map.grid_size, map.tile_size);
+    let key = match zone_type {
+        ZoneType::Exploration => "exploration",
+        ZoneType::SetupStorageArea => "setup_storage",
+        ZoneType::StorageArea => return,
+    };
+    let zone_config = game_config.zone_config(key).unwrap();
+    let target_handle = asset_server.get_handle(&zone_config.overlay.path);
     let target_index = atlas
         .texture_atlas
         .get_texture_index(&target_handle)
         .unwrap();
-    let point = target_transform.translation.truncate();
-    let coordinate = grid_coordinate_from_world(&point, map.grid_size, map.tile_size);
     commands
         .spawn(SpriteSheetBundle {
             transform: Transform {
@@ -53,5 +64,6 @@ pub fn place_zone(
         .insert(Zone)
         .insert(GridBody {
             center_coordinate: coordinate,
-        });
+        })
+        .insert(*zone_type);
 }

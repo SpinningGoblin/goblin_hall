@@ -33,6 +33,7 @@ fn main() {
         systems::camera::process_movement_input,
         systems::camera::zoom_camera,
         systems::targets::move_target,
+        systems::targets::swap_targets,
     )
         .in_set(OnUpdate(AppState::InGame))
         .in_set(Sets::Input);

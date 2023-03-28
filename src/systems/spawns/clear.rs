@@ -11,6 +11,6 @@ pub fn clear(
     }
 
     if let Ok(mut map_spawns) = map_spawns_query.get_single_mut() {
-        map_spawns.spawnables.clear();
+        map_spawns.clear();
     }
 }

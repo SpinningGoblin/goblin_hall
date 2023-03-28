@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{default, info, AssetServer, Commands, Query, Res, Transform, Vec3},
+    prelude::{default, info, AssetServer, Commands, Query, Res, Transform, Vec3, Visibility},
     sprite::{SpriteSheetBundle, TextureAtlasSprite},
 };
 use tdlg::map::layers::{FloorType, LayerType, StructureType};
@@ -7,6 +7,7 @@ use tdlg::map::layers::{FloorType, LayerType, StructureType};
 use crate::{
     components::{
         structures::{GridBody, Mineable, Structure},
+        zones::ZoneType,
         Map, MapSpawns,
     },
     resources::{
@@ -27,7 +28,47 @@ pub fn map(
         return;
     };
 
-    for spawnable in map_spawns.spawnables.iter() {
+    for spawnable in map_spawns.zone_spawnables.iter() {
+        let coordinate = world_coordinate_from_grid(
+            &spawnable.spawn_coordinate.coordinate,
+            map.grid_size,
+            map.tile_size,
+        );
+        let transform = Transform {
+            translation: Vec3::new(
+                coordinate.x,
+                coordinate.y,
+                spawnable.spawn_coordinate.z_level,
+            ),
+            scale: Vec3::splat(game_config.tile_scale()),
+            ..default()
+        };
+
+        let key = match spawnable.zone_type {
+            ZoneType::Exploration => "exploration",
+            ZoneType::SetupStorageArea => "setup_storage",
+            ZoneType::StorageArea => "storage",
+        };
+
+        if let Some(zone_config) = game_config.zone_config(key) {
+            let handle = asset_server.get_handle(&zone_config.overlay.path);
+            let texture_index = atlas.texture_atlas.get_texture_index(&handle).unwrap();
+            commands
+                .spawn(SpriteSheetBundle {
+                    transform,
+                    sprite: TextureAtlasSprite::new(texture_index),
+                    texture_atlas: atlas.atlas_handle.clone(),
+                    visibility: Visibility::Inherited,
+                    ..default()
+                })
+                .insert(GridBody {
+                    center_coordinate: spawnable.spawn_coordinate.coordinate,
+                })
+                .insert(ZoneType::StorageArea);
+        }
+    }
+
+    for spawnable in map_spawns.map_spawnables.iter() {
         let coordinate = world_coordinate_from_grid(
             &spawnable.spawn_coordinate.coordinate,
             map.grid_size,

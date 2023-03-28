@@ -10,9 +10,9 @@ use crate::{
         characters::Character,
         jobs::{ExplorationHistory, Job, PreviousJob},
         movement::{Direction, ExplorationTarget, Path, VisitedPoint},
-        structures::{GridBody, Mineable, MiningTarget},
+        structures::{GridBody, Mineable, MiningTarget, SetupStorageArea},
         tasks::{Task, Todo},
-        zones::Zone,
+        zones::{Zone, ZoneType},
         GridBox, Map,
     },
     resources::config::grid::{grid_coordinate_from_world, pathfind},
@@ -32,17 +32,17 @@ pub fn build_todo(
     mineable_query: Query<(&Mineable, &GridBody, Entity)>,
     map_query: Query<&Map>,
     explore_history_query: Query<&ExplorationHistory>,
-    exploration_zone_query: Query<(&Zone, &GridBody, Entity)>,
+    exploration_zone_query: Query<(&Zone, &GridBody, &ZoneType, Entity)>,
 ) {
     let (Ok(map), Ok(exploration_history)) = (map_query.get_single(), explore_history_query.get_single()) else {
         return;
     };
 
     let mut used_directions: Vec<Direction> = Vec::new();
-    let exploration_zones: Vec<(&GridBody, Entity)> = exploration_zone_query
+    let exploration_zones = exploration_zone_query
         .iter()
-        .map(|(_, body, entity)| (body, entity))
-        .collect();
+        .map(|(_, body, zone_type, entity)| (body, zone_type, entity))
+        .collect::<Vec<(&GridBody, &ZoneType, Entity)>>();
     let mut used_zones: Vec<Entity> = Vec::new();
 
     for character_bundle in query.iter() {
@@ -61,8 +61,8 @@ pub fn build_todo(
             Job::Explorer => {
                 let exploration_zone = exploration_zones
                     .iter()
-                    .filter(|(_, entity)| !used_zones.contains(entity))
-                    .min_by_key(|(body, _)| {
+                    .filter(|(_, _, entity)| !used_zones.contains(entity))
+                    .min_by_key(|(body, _, _)| {
                         body.center_coordinate.distance(&visibility_box.center)
                     });
 
@@ -75,7 +75,7 @@ pub fn build_todo(
                     exploration_zone,
                 );
 
-                if let Some((_, entity)) = exploration_zone {
+                if let Some((_, _, entity)) = exploration_zone {
                     used_zones.push(*entity);
                 }
 
@@ -146,11 +146,11 @@ fn build_explore_todo(
     visibility_box: &GridBox,
     possible_previous_job: Option<&PreviousJob>,
     exploration_history: &ExplorationHistory,
-    exploration_zone: Option<&(&GridBody, Entity)>,
+    exploration_zone: Option<&(&GridBody, &ZoneType, Entity)>,
 ) -> Option<Todo> {
-    let todo = if let Some((body, entity)) = exploration_zone {
-        path_to_point(map, &visibility_box.center, &body.center_coordinate).map(|path| Todo {
-            tasks: vec![
+    let todo = if let Some((body, zone_type, entity)) = exploration_zone {
+        path_to_point(map, &visibility_box.center, &body.center_coordinate).map(|path| {
+            let mut tasks = vec![
                 Task::Walk(Path {
                     direction: None,
                     points: path
@@ -161,7 +161,15 @@ fn build_explore_todo(
                 Task::ClearExplorationTarget(ExplorationTarget {
                     entity: Some(*entity),
                 }),
-            ],
+            ];
+
+            if matches!(*zone_type, ZoneType::SetupStorageArea) {
+                tasks.push(Task::SetupStorageArea(SetupStorageArea {
+                    coordinate: body.center_coordinate,
+                    done: false,
+                }))
+            }
+            Todo { tasks }
         })
     } else {
         None

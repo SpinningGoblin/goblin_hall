@@ -2,7 +2,7 @@ use std::io;
 
 use super::{
     game::{GameBasics, GameConfiguration},
-    CameraConfig, CharacterConfig, SpriteGroup, StructureConfig,
+    CameraConfig, CharacterConfig, SpriteGroup, StructureConfig, ZonesConfig,
 };
 
 #[derive(Debug)]
@@ -52,12 +52,18 @@ pub fn camera_json() -> &'static str {
 }
 
 #[cfg(feature = "embedded")]
+pub fn zones_json() -> &'static str {
+    include_str!("../../../assets/config/zones.json")
+}
+
+#[cfg(feature = "embedded")]
 pub fn load_game_configuration() -> Result<GameConfiguration, LoadError> {
     let basics: GameBasics = serde_json::from_str(game_json())?;
     let floor_sprites: Vec<SpriteGroup> = serde_json::from_str(floors_json())?;
     let structures: Vec<StructureConfig> = serde_json::from_str(structures_json())?;
     let characters: Vec<CharacterConfig> = serde_json::from_str(characters_json())?;
     let camera: CameraConfig = serde_json::from_str(camera_json())?;
+    let zones: ZonesConfig = serde_json::from_str(zones_json())?;
 
     Ok(GameConfiguration::new(
         basics,
@@ -85,11 +91,15 @@ pub fn load_game_configuration() -> Result<GameConfiguration, LoadError> {
     let camera_text = std::fs::read_to_string("./assets/config/camera.json")?;
     let camera: CameraConfig = serde_json::from_str(&camera_text)?;
 
+    let zone_text = std::fs::read_to_string("./assets/config/zones.json")?;
+    let zones: ZonesConfig = serde_json::from_str(&zone_text)?;
+
     Ok(GameConfiguration::new(
         basics,
         floor_sprites,
         structures,
         characters,
         camera,
+        zones,
     ))
 }

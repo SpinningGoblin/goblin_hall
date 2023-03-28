@@ -13,5 +13,7 @@ pub mod zones;
 
 pub use grid_box::GridBox;
 pub use map::Map;
-pub use spawns::{CharacterSpawnable, CharacterSpawns, MapSpawnable, MapSpawns, SpawnCoordinate};
+pub use spawns::{
+    CharacterSpawnable, CharacterSpawns, MapSpawnable, MapSpawns, SpawnCoordinate, ZoneSpawnable,
+};
 pub use world::World;

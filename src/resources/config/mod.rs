@@ -7,6 +7,7 @@ mod movement;
 mod sprites;
 mod structures;
 mod timers;
+mod zones;
 
 pub use camera::{CameraConfig, ZoomLevel};
 pub use characters::CharacterConfig;
@@ -16,3 +17,4 @@ pub use movement::MovementConfig;
 pub use sprites::{SingleSprite, SpriteGroup, SpriteLayerType, SpriteTileStats};
 pub use structures::{HealthConfig, HealthRange, StructureConfig};
 pub use timers::{MovementTimer, MovementTimerConfig, WorldTickTimer, WorldTickTimerConfig};
+pub use zones::{ZoneConfig, ZonesConfig};

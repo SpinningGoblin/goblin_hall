@@ -1,7 +1,7 @@
 use bevy::prelude::{Component, Visibility};
 use tdlg::map::{cells::Coordinate, layers::LayerType};
 
-use super::characters::CreatureType;
+use super::{characters::CreatureType, zones::ZoneType};
 
 #[derive(Component)]
 pub struct CharacterSpawns {
@@ -10,7 +10,20 @@ pub struct CharacterSpawns {
 
 #[derive(Component)]
 pub struct MapSpawns {
-    pub spawnables: Vec<MapSpawnable>,
+    pub map_spawnables: Vec<MapSpawnable>,
+    pub zone_spawnables: Vec<ZoneSpawnable>,
+}
+
+impl MapSpawns {
+    pub fn clear(&mut self) {
+        self.map_spawnables.clear();
+        self.zone_spawnables.clear();
+    }
+}
+
+pub struct ZoneSpawnable {
+    pub spawn_coordinate: SpawnCoordinate,
+    pub zone_type: ZoneType,
 }
 
 pub struct SpawnCoordinate {

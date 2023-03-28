@@ -13,10 +13,6 @@
       "wait_time": 0.3
     }
   },
-  "mouse_target": {
-    "key": "target",
-    "path": "sprites/outline.png"
-  },
   "zone": {
     "key": "zone",
     "path": "sprites/zone.png"
