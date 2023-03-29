@@ -3,7 +3,7 @@ use bevy::prelude::{Commands, Query, ResMut, Visibility};
 use crate::{
     components::{
         jobs::ExplorationHistory, movement::CameraMoveTimer, CharacterSpawnable, CharacterSpawns,
-        Map, MapSpawnable, MapSpawns, SpawnCoordinate, World,
+        Map, MapSpawns, SpawnCoordinate, StructureSpawns, TdlgSpawnable, World,
     },
     resources::config::GameConfiguration,
 };
@@ -13,6 +13,7 @@ pub fn spawn_starting(
     mut game_config: ResMut<GameConfiguration>,
     mut character_spawns_query: Query<&mut CharacterSpawns>,
     mut map_spawns_query: Query<&mut MapSpawns>,
+    structure_spawns_query: Query<&StructureSpawns>,
 ) {
     commands.spawn(World::default());
     commands.spawn(CameraMoveTimer {
@@ -22,10 +23,10 @@ pub fn spawn_starting(
     commands.spawn(ExplorationHistory::default());
 
     let top_down_map = game_config.generate_top_down_map();
-    let mut map_spawnables: Vec<MapSpawnable> = Vec::new();
+    let mut tdlg_spawnables: Vec<TdlgSpawnable> = Vec::new();
     for cell in top_down_map.grid().cells() {
         for (index, layer) in cell.layers().iter().enumerate() {
-            map_spawnables.push(MapSpawnable {
+            tdlg_spawnables.push(TdlgSpawnable {
                 layer_type: *layer,
                 spawn_coordinate: SpawnCoordinate {
                     coordinate: *cell.coordinate(),
@@ -53,14 +54,20 @@ pub fn spawn_starting(
     };
 
     match map_spawns_query.get_single_mut() {
-        Ok(mut map_spawns) => map_spawns.map_spawnables.append(&mut map_spawnables),
+        Ok(mut map_spawns) => map_spawns.tdlg_spawnables.append(&mut tdlg_spawnables),
         Err(_) => {
             commands.spawn(MapSpawns {
-                map_spawnables,
+                tdlg_spawnables,
                 zone_spawnables: Vec::new(),
             });
         }
     };
+
+    if let Err(_) = structure_spawns_query.get_single() {
+        commands.spawn(StructureSpawns {
+            spawnables: Vec::new(),
+        });
+    }
 
     commands.spawn(Map {
         current: top_down_map,

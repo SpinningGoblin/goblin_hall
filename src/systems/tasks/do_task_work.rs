@@ -6,8 +6,7 @@ use crate::components::{
     jobs::ExplorationHistory,
     structures::{GridBody, Mineable},
     tasks::{Task, Todo},
-    zones::ZoneType,
-    Map, MapSpawnable, MapSpawns, SpawnCoordinate, ZoneSpawnable,
+    Map, MapSpawns, SpawnCoordinate, StructureSpawnable, StructureSpawns, TdlgSpawnable,
 };
 
 type NotMineableCharacter = (With<Mineable>, Without<Character>);
@@ -20,6 +19,7 @@ pub fn do_task_work(
     mut exploration_history_query: Query<&mut ExplorationHistory>,
     mut map_query: Query<&mut Map>,
     mut map_spawns_query: Query<&mut MapSpawns>,
+    mut structure_spawns_query: Query<&mut StructureSpawns>,
 ) {
     let all_query_items = (
         map_query.get_single_mut(),
@@ -63,7 +63,7 @@ pub fn do_task_work(
                                     .remove_layer(&mining_target.coordinate, *layer);
                             }
 
-                            map_spawns.map_spawnables.push(MapSpawnable {
+                            map_spawns.tdlg_spawnables.push(TdlgSpawnable {
                                 layer_type: LayerType::Structure(StructureType::Rubble),
                                 spawn_coordinate: SpawnCoordinate {
                                     coordinate: body.center_coordinate,
@@ -82,13 +82,16 @@ pub fn do_task_work(
                 }
                 Task::SetupStorageArea(ref mut setup_storage_area) => {
                     setup_storage_area.done = true;
-                    map_spawns.zone_spawnables.push(ZoneSpawnable {
-                        spawn_coordinate: SpawnCoordinate {
-                            coordinate: setup_storage_area.coordinate,
-                            z_level: 10.0,
-                        },
-                        zone_type: ZoneType::StorageArea,
-                    })
+                    if let Ok(mut structure_spawns) = structure_spawns_query.get_single_mut() {
+                        structure_spawns.spawnables.push(StructureSpawnable {
+                            spawn_type: crate::components::StructureSpawnType::StorageArea,
+                            spawn_coordinate: SpawnCoordinate {
+                                coordinate: setup_storage_area.coordinate,
+                                z_level: 20.,
+                            },
+                            visibility: Visibility::Inherited,
+                        });
+                    }
                 }
             };
         }

@@ -4,5 +4,4 @@ use bevy::prelude::Component;
 pub enum ZoneType {
     Exploration,
     SetupStorageArea,
-    StorageArea,
 }

@@ -47,7 +47,6 @@ pub fn map(
         let key = match spawnable.zone_type {
             ZoneType::Exploration => "exploration",
             ZoneType::SetupStorageArea => "setup_storage",
-            ZoneType::StorageArea => "storage",
         };
 
         if let Some(zone_config) = game_config.zone_config(key) {
@@ -63,12 +62,11 @@ pub fn map(
                 })
                 .insert(GridBody {
                     center_coordinate: spawnable.spawn_coordinate.coordinate,
-                })
-                .insert(ZoneType::StorageArea);
+                });
         }
     }
 
-    for spawnable in map_spawns.map_spawnables.iter() {
+    for spawnable in map_spawns.tdlg_spawnables.iter() {
         let coordinate = world_coordinate_from_grid(
             &spawnable.spawn_coordinate.coordinate,
             map.grid_size,

@@ -58,6 +58,7 @@ fn main() {
     let finishing_set = (
         systems::characters::show_in_visible_area,
         systems::spawns::characters,
+        systems::spawns::structures,
         systems::spawns::map,
         systems::spawns::clear
             .after(systems::spawns::characters)
@@ -68,7 +69,7 @@ fn main() {
 
     let starting_spawns = (
         systems::targets::spawn,
-        systems::map::spawn_starting,
+        systems::init::spawn_starting,
         systems::camera::spawn_camera,
     )
         .after(StartupSets::TextureAtlas)

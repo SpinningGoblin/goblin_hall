@@ -42,7 +42,6 @@ pub fn place_zone(
     let key = match zone_type {
         ZoneType::Exploration => "exploration",
         ZoneType::SetupStorageArea => "setup_storage",
-        ZoneType::StorageArea => return,
     };
     let zone_config = game_config.zone_config(key).unwrap();
     let target_handle = asset_server.get_handle(&zone_config.overlay.path);
