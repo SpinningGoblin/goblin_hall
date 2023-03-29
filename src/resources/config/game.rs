@@ -179,6 +179,6 @@ mod tests {
         };
 
         let serialized = serde_json::to_string(&basics).unwrap();
-        assert_eq!("{\"tiles\":{\"size\":32.0,\"scale\":4.0},\"grid_generation\":{\"size\":20,\"target_num_rooms\":20,\"seed\":\"test\"},\"movement\":{\"timer\":{\"wait_time\":0.2}},\"mouse_target\":{\"key\":\"target\",\"path\":\"outline.png\",\"tile_stats\":null},\"zone\":{\"key\":\"zone\",\"path\":\"zone.png\",\"tile_stats\":null},\"world\":{\"wait_time\":0.4}}", &serialized);
+        assert_eq!("{\"tiles\":{\"size\":32.0,\"scale\":4.0},\"grid_generation\":{\"size\":20,\"target_num_rooms\":20,\"seed\":\"test\"},\"movement\":{\"timer\":{\"wait_time\":0.2}},\"zone\":{\"key\":\"zone\",\"path\":\"zone.png\",\"tile_stats\":null},\"world\":{\"wait_time\":0.4}}", &serialized);
     }
 }
