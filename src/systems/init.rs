@@ -63,7 +63,7 @@ pub fn spawn_starting(
         }
     };
 
-    if let Err(_) = structure_spawns_query.get_single() {
+    if structure_spawns_query.get_single().is_err() {
         commands.spawn(StructureSpawns {
             spawnables: Vec::new(),
         });
