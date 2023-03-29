@@ -1,37 +1,37 @@
 {
-  "zones": [
-    {
-      "key": "exploration",
-      "target": {
-        "key": "target",
-        "path": "sprites/zones/exploration_target.png"
-      },
-      "overlay": {
-        "key": "overlay",
-        "path": "sprites/zones/exploration_overlay.png"
-      }
-    },
-    {
-      "key": "setup_storage",
-      "target": {
-        "key": "target",
-        "path": "sprites/zones/setup_storage_target.png"
-      },
-      "overlay": {
-        "key": "overlay",
-        "path": "sprites/zones/setup_storage_overlay.png"
-      }
-    },
-    {
-      "key": "storage",
-      "target": {
-        "key": "target",
-        "path": "sprites/zones/storage_target.png"
-      },
-      "overlay": {
-        "key": "overlay",
-        "path": "sprites/zones/storage_overlay.png"
-      }
-    }
-  ]
+    "zones": [
+        {
+            "key": "exploration",
+            "target": {
+                "key": "target",
+                "path": "sprites/zones/exploration_target.png"
+            },
+            "overlay": {
+                "key": "overlay",
+                "path": "sprites/zones/exploration_overlay.png"
+            }
+        },
+        {
+            "key": "setup_storage",
+            "target": {
+                "key": "target",
+                "path": "sprites/zones/setup_storage_target.png"
+            },
+            "overlay": {
+                "key": "overlay",
+                "path": "sprites/zones/setup_storage_overlay.png"
+            }
+        },
+        {
+            "key": "storage_area",
+            "target": {
+                "key": "target",
+                "path": "sprites/zones/storage_target.png"
+            },
+            "overlay": {
+                "key": "overlay",
+                "path": "sprites/zones/storage_overlay.png"
+            }
+        }
+    ]
 }
