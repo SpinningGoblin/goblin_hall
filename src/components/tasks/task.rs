@@ -1,6 +1,6 @@
 use crate::components::{
-    movement::{ExplorationTarget, Path},
-    tasks::{MiningTarget, SetupStorageArea},
+    movement::Path,
+    tasks::{ExplorationTarget, MiningTarget, SetupStorageArea},
 };
 
 #[derive(Clone)]

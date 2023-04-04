@@ -9,9 +9,9 @@ use crate::{
     components::{
         characters::Character,
         jobs::{ExplorationHistory, Job, PreviousJob},
-        movement::{Direction, ExplorationTarget, Path, VisitedPoint},
+        movement::{Direction, Path, VisitedPoint},
         structures::{GridBody, Mineable},
-        tasks::{MiningTarget, SetupStorageArea, Task, Todo},
+        tasks::{ExplorationTarget, MiningTarget, SetupStorageArea, Task, Todo},
         zones::{Zone, ZoneType},
         GridBox, Map,
     },
