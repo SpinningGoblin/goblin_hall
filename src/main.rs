@@ -46,9 +46,15 @@ fn main() {
         .in_set(OnUpdate(AppState::InGame))
         .in_set(Sets::Tick);
 
+    // TODO: I want to break apart the job/todo/tasks a bit so it's more composable and the systems can be
+    // smaller and have less dependencies.
+    // I should be able to have each character have their currently assigned task, and also have a job.
+    // Do I need the Todo idea at all? Do I want a list of tasks, or should I just assign jobs and then
+    // just reassign the jobs occasionally and figure out the tasks they should be doing based on their job.
+
     let character_job_set = (
-        systems::jobs::assign_job.run_if(systems::world::tick_just_finished),
-        systems::tasks::build_todo.run_if(systems::world::tick_just_finished),
+        systems::jobs::assign_job,
+        systems::tasks::build_todo,
         systems::tasks::do_task_work.run_if(systems::world::tick_just_finished),
         systems::tasks::remove_todo,
     )
