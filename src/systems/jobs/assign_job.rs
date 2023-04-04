@@ -40,7 +40,7 @@ pub fn assign_job(
             .next()
             .is_some();
 
-        if structures_in_range {
+        if !structures_in_range {
             commands.entity(entity).insert(Job::Explorer);
         } else {
             commands.entity(entity).insert(Job::Miner);
