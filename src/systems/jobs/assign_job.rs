@@ -35,11 +35,12 @@ pub fn assign_job(
 
         let visibility_box = character.visibility_box(character_coordinate);
         let structures_in_range = structure_query
-            .iter()
+            .into_iter()
             .filter(|(_, body)| visibility_box.contains(&body.center_coordinate))
-            .collect::<Vec<(&Mineable, &GridBody)>>();
+            .next()
+            .is_some();
 
-        if structures_in_range.is_empty() {
+        if structures_in_range {
             commands.entity(entity).insert(Job::Explorer);
         } else {
             commands.entity(entity).insert(Job::Miner);
