@@ -1,6 +1,6 @@
 use bevy::prelude::{Component, Vec2};
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Debug)]
 pub struct ExplorationHistory {
     pub points: Vec<Vec2>,
 }

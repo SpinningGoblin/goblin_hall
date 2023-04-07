@@ -1,14 +1,17 @@
-use bevy::prelude::{info, Commands, Entity, Query, Transform, Visibility, With, Without};
+use bevy::prelude::{
+    info, Commands, Entity, EventWriter, Query, Transform, Visibility, With, Without,
+};
 use tdlg::map::layers::{LayerType, StructureType};
 
 use crate::{
     components::{
         characters::Character,
-        jobs::{Builder, ExplorationHistory, Explorer, Miner, PreviousExplorations},
+        jobs::{Builder, Explorer, Miner, PreviousExplorations},
         structures::{GridBody, Mineable},
         tasks::{ClearExplorationTargetTask, MineTask, SetupStorageAreaTask, WalkTask},
         Map, MapSpawns, SpawnCoordinate, StructureSpawnable, StructureSpawns, TdlgSpawnable,
     },
+    events::PointVisited,
     utils,
 };
 
@@ -24,19 +27,15 @@ pub fn do_walk_work(
         Entity,
         &mut PreviousExplorations,
     )>,
-    mut exploration_history_query: Query<&mut ExplorationHistory>,
+    mut event_writer: EventWriter<PointVisited>,
 ) {
-    let Ok(mut exploration_history) = exploration_history_query.get_single_mut() else {
-        return;
-    };
-
     for character_bundle in query.iter_mut() {
         let (_, mut transform, mut walk_task, entity, mut previous_explorations) = character_bundle;
 
         utils::movement::visit_next_point(
             &mut walk_task.path,
             transform.as_mut(),
-            exploration_history.as_mut(),
+            &mut event_writer,
         );
 
         if walk_task.is_complete() {
@@ -56,16 +55,15 @@ pub fn do_mining_work(
     mut commands: Commands,
     mut query: Query<(&mut MineTask, &mut Transform, &Character, Entity)>,
     mineable_query: Query<TransformBody, NotMineableCharacter>,
-    mut exploration_history_query: Query<&mut ExplorationHistory>,
     mut map_query: Query<&mut Map>,
     mut map_spawns_query: Query<&mut MapSpawns>,
+    mut event_writer: EventWriter<PointVisited>,
 ) {
     let all_query_items = (
         map_query.get_single_mut(),
-        exploration_history_query.get_single_mut(),
         map_spawns_query.get_single_mut(),
     );
-    let (Ok(mut map), Ok(mut exploration_history), Ok(mut map_spawns)) = all_query_items else {
+    let (Ok(mut map), Ok(mut map_spawns)) = all_query_items else {
         return;
     };
     for character_bundle in query.iter_mut() {
@@ -77,7 +75,7 @@ pub fn do_mining_work(
             utils::movement::visit_next_point(
                 &mut mine_task.target.path,
                 transform.as_mut(),
-                exploration_history.as_mut(),
+                &mut event_writer,
             );
         } else if let Some(entity) = mine_task.target.entity {
             if let Ok((transform, body)) = mineable_query.get(entity) {
@@ -118,12 +116,8 @@ pub fn do_clear_exploration_work(
         &mut ClearExplorationTargetTask,
         Entity,
     )>,
-    mut exploration_history_query: Query<&mut ExplorationHistory>,
+    mut event_writer: EventWriter<PointVisited>,
 ) {
-    let Ok(mut exploration_history) = exploration_history_query.get_single_mut() else {
-        return;
-    };
-
     for character_bundle in query.iter_mut() {
         let (_, mut transform, mut clear_expliration_target, entity) = character_bundle;
 
@@ -134,7 +128,7 @@ pub fn do_clear_exploration_work(
             utils::movement::visit_next_point(
                 &mut clear_expliration_target.target.path,
                 transform.as_mut(),
-                exploration_history.as_mut(),
+                &mut event_writer,
             );
         } else if let Some(entity) = clear_expliration_target.target.entity {
             info!("despawning the exploration target");
@@ -159,13 +153,9 @@ pub fn do_setup_storage_work(
         &mut SetupStorageAreaTask,
         Entity,
     )>,
-    mut exploration_history_query: Query<&mut ExplorationHistory>,
     mut structure_spawns_query: Query<&mut StructureSpawns>,
+    mut event_writer: EventWriter<PointVisited>,
 ) {
-    let Ok(mut exploration_history) = exploration_history_query.get_single_mut() else {
-        return;
-    };
-
     for character_bundle in query.iter_mut() {
         let (_, mut transform, mut task, entity) = character_bundle;
 
@@ -173,7 +163,7 @@ pub fn do_setup_storage_work(
             utils::movement::visit_next_point(
                 &mut task.setup_area.path,
                 transform.as_mut(),
-                exploration_history.as_mut(),
+                &mut event_writer,
             );
         } else if let Some(setup_entity) = task.setup_area.entity {
             commands.entity(setup_entity).despawn();

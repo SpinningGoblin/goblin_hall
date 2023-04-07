@@ -6,12 +6,14 @@ use bevy::{
     window::close_on_esc,
     DefaultPlugins,
 };
+use events::PointVisited;
 use resources::sprites::Handles;
 use sets::{Sets, StartupSets};
 use state::AppState;
 use systems::textures;
 
 mod components;
+mod events;
 mod resources;
 mod sets;
 mod state;
@@ -25,6 +27,7 @@ fn main() {
     app.init_resource::<Handles>()
         .insert_resource(game_config.world_timer())
         .insert_resource(game_config)
+        .add_event::<PointVisited>()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .configure_set(Sets::CharacterJobs.after(Sets::Tick))
         .configure_set(Sets::Finishing.after(Sets::CharacterJobs))
@@ -75,6 +78,7 @@ fn main() {
         systems::tasks::do_setup_storage_work.run_if(systems::world::tick_just_finished),
     )
         .in_set(Sets::CharacterTasks)
+        .after(Sets::CharacterJobs)
         .in_set(OnUpdate(AppState::InGame));
 
     let finishing_set = (
@@ -82,11 +86,13 @@ fn main() {
         systems::spawns::characters,
         systems::spawns::structures,
         systems::spawns::map,
+        systems::characters::collect_visited_points,
         systems::spawns::clear
             .after(systems::spawns::characters)
             .after(systems::spawns::map),
     )
         .in_set(OnUpdate(AppState::InGame))
+        .after(Sets::CharacterTasks)
         .in_set(Sets::Finishing);
 
     let starting_spawns = (

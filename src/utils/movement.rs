@@ -1,4 +1,4 @@
-use bevy::prelude::{Transform, Vec2};
+use bevy::prelude::{EventWriter, Transform, Vec2};
 use tdlg::map::cells::Coordinate;
 
 use crate::{
@@ -7,13 +7,14 @@ use crate::{
         movement::{Direction, Path, VisitedPoint},
         Map,
     },
+    events::PointVisited,
     resources::config::grid::pathfind,
 };
 
 pub fn visit_next_point(
     path: &mut Path,
     transform: &mut Transform,
-    exploration_history: &mut ExplorationHistory,
+    event_writer: &mut EventWriter<PointVisited>,
 ) {
     if let Some(visited_point) = path
         .points
@@ -23,7 +24,9 @@ pub fn visit_next_point(
         transform.translation.x = visited_point.point.x;
         transform.translation.y = visited_point.point.y;
         visited_point.visited = true;
-        exploration_history.push(visited_point.point);
+        event_writer.send(PointVisited {
+            point: visited_point.point,
+        });
     }
 }
 
