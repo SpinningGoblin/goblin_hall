@@ -1,5 +1,6 @@
 use bevy::prelude::{Commands, Entity, Query, Transform, With};
 use strum::IntoEnumIterator;
+use tdlg::map::cells::Coordinate;
 
 use crate::{
     components::{
@@ -12,7 +13,7 @@ use crate::{
         GridBox, Map,
     },
     resources::config::grid::grid_coordinate_from_world,
-    utils::movement::{find_path, path_to_point},
+    utils::movement::path_to_point,
 };
 
 type CharacterWithTransform = (
@@ -88,6 +89,28 @@ pub fn assign_explorer_task(
     }
 }
 
+pub fn find_exploration_path(
+    map: &Map,
+    coordinate: &Coordinate,
+    character_coordinate: &Coordinate,
+    direction: Option<Direction>,
+    exploration_history: &ExplorationHistory,
+) -> Option<Path> {
+    if !map.is_coordinate_walkable(coordinate) {
+        return None;
+    }
+
+    path_to_point(map, character_coordinate, coordinate)
+        .filter(|points| !exploration_history.contains(points))
+        .map(|path| Path {
+            direction,
+            points: path
+                .iter()
+                .map(|point| VisitedPoint::from(*point))
+                .collect(),
+        })
+}
+
 fn build_explore_task(
     used_directions: &mut Vec<Direction>,
     map: &Map,
@@ -117,7 +140,7 @@ fn build_explore_task(
 
     task.or_else(|| {
         previous_explorations.direction.and_then(|direction| {
-            find_path(
+            find_exploration_path(
                 map,
                 &visibility_box.farthest_coordinate_at_direction(&direction),
                 &visibility_box.center,
@@ -131,7 +154,7 @@ fn build_explore_task(
         Direction::iter()
             .filter(|direction| !used_directions.contains(direction))
             .find_map(|direction| {
-                find_path(
+                find_exploration_path(
                     map,
                     &visibility_box.farthest_coordinate_at_direction(&direction),
                     &visibility_box.center,

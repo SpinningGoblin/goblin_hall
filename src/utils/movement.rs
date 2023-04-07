@@ -2,11 +2,7 @@ use bevy::prelude::{EventWriter, Transform, Vec2};
 use tdlg::map::cells::Coordinate;
 
 use crate::{
-    components::{
-        jobs::ExplorationHistory,
-        movement::{Direction, Path, VisitedPoint},
-        Map,
-    },
+    components::{movement::Path, Map},
     events::PointVisited,
     resources::config::grid::pathfind,
 };
@@ -32,26 +28,4 @@ pub fn visit_next_point(
 
 pub fn path_to_point(map: &Map, start: &Coordinate, end: &Coordinate) -> Option<Vec<Vec2>> {
     pathfind(map, start, end)
-}
-
-pub fn find_path(
-    map: &Map,
-    coordinate: &Coordinate,
-    character_coordinate: &Coordinate,
-    direction: Option<Direction>,
-    exploration_history: &ExplorationHistory,
-) -> Option<Path> {
-    if !map.is_coordinate_walkable(coordinate) {
-        return None;
-    }
-
-    path_to_point(map, character_coordinate, coordinate)
-        .filter(|points| !exploration_history.contains(points))
-        .map(|path| Path {
-            direction,
-            points: path
-                .iter()
-                .map(|point| VisitedPoint::from(*point))
-                .collect(),
-        })
 }
