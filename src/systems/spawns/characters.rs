@@ -6,6 +6,7 @@ use bevy::{
 use crate::{
     components::{
         characters::{Character, CreatureType},
+        jobs::JobPriority,
         CharacterSpawns, Map,
     },
     resources::{
@@ -57,7 +58,8 @@ pub fn characters(
                         })
                         .insert(Character {
                             visibility: character_config.visibility,
-                        });
+                        })
+                        .insert(JobPriority::default());
                 }
             }
         }

@@ -53,15 +53,26 @@ fn main() {
     // Do I need the Todo idea at all? Do I want a list of tasks, or should I just assign jobs and then
     // just reassign the jobs occasionally and figure out the tasks they should be doing based on their job.
 
+    let assign_job_set = (
+        systems::jobs::assign_miner_priority,
+        systems::jobs::assign_builder_priority,
+        systems::jobs::assign_explorer_priority,
+        systems::jobs::assign_job
+            .after(systems::jobs::assign_miner_priority)
+            .after(systems::jobs::assign_builder_priority)
+            .after(systems::jobs::assign_explorer_priority),
+    )
+        .in_set(Sets::CharacterJobs)
+        .in_set(OnUpdate(AppState::InGame));
+
     let character_job_set = (
-        systems::jobs::assign_job,
         systems::tasks::assign_explorer_task,
         systems::tasks::assign_miner_task,
         systems::tasks::assign_builder_task,
         systems::tasks::do_task_work.run_if(systems::world::tick_just_finished),
         systems::tasks::remove_task,
     )
-        .in_set(Sets::CharacterJobs)
+        .in_set(Sets::CharacterTasks)
         .in_set(OnUpdate(AppState::InGame));
 
     let finishing_set = (
@@ -89,6 +100,7 @@ fn main() {
         .add_systems(input_set)
         .add_systems(input_responses)
         .add_system(tick_set)
+        .add_systems(assign_job_set)
         .add_systems(character_job_set)
         .add_systems(finishing_set)
         .add_system(textures::load.in_schedule(OnEnter(AppState::Startup)))

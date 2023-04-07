@@ -5,6 +5,7 @@ use bevy::prelude::SystemSet;
 pub enum Sets {
     Input,
     InputResponse,
+    CharacterTasks,
     CharacterJobs,
     Finishing,
     Tick,

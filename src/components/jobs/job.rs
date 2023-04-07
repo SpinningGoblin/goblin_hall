@@ -7,6 +7,12 @@ pub enum JobType {
     Builder,
 }
 
+impl Default for JobType {
+    fn default() -> Self {
+        Self::Explorer
+    }
+}
+
 pub trait Job {
     fn job_type(&self) -> JobType;
 }
