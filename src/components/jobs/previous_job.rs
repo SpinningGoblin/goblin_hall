@@ -1,11 +1,11 @@
 use bevy::prelude::Component;
 
-use crate::components::tasks::Todo;
+use crate::components::tasks::Task;
 
-use super::Job;
+use super::JobType;
 
 #[derive(Component)]
 pub struct PreviousJob {
-    pub job: Job,
-    pub todo: Todo,
+    pub job: JobType,
+    pub tasks: Vec<Task>,
 }

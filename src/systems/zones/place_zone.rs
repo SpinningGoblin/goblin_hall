@@ -10,7 +10,7 @@ use crate::{
     components::{
         structures::GridBody,
         target::MouseTarget,
-        zones::{Zone, ZoneType},
+        zones::{ExplorationZone, SetupStorageAreaZone, ZoneType},
         Map,
     },
     resources::{
@@ -49,20 +49,23 @@ pub fn place_zone(
         .texture_atlas
         .get_texture_index(&target_handle)
         .unwrap();
-    commands
-        .spawn(SpriteSheetBundle {
-            transform: Transform {
-                translation: target_transform.translation,
-                scale: Vec3::splat(game_config.tile_scale()),
-                ..default()
-            },
-            sprite: TextureAtlasSprite::new(target_index),
-            texture_atlas: atlas.atlas_handle.clone(),
+
+    let mut spawn_command = commands.spawn(SpriteSheetBundle {
+        transform: Transform {
+            translation: target_transform.translation,
+            scale: Vec3::splat(game_config.tile_scale()),
             ..default()
-        })
-        .insert(Zone)
-        .insert(GridBody {
-            center_coordinate: coordinate,
-        })
-        .insert(*zone_type);
+        },
+        sprite: TextureAtlasSprite::new(target_index),
+        texture_atlas: atlas.atlas_handle.clone(),
+        ..default()
+    });
+    spawn_command.insert(GridBody {
+        center_coordinate: coordinate,
+    });
+
+    match zone_type {
+        ZoneType::Exploration => spawn_command.insert(ExplorationZone),
+        ZoneType::SetupStorageArea => spawn_command.insert(SetupStorageAreaZone),
+    };
 }

@@ -2,13 +2,21 @@ use bevy::prelude::Vec2;
 
 use super::Direction;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Path {
     pub direction: Option<Direction>,
     pub points: Vec<VisitedPoint>,
 }
 
-#[derive(Clone)]
+impl Path {
+    pub fn incomplete(&self) -> bool {
+        self.points
+            .iter()
+            .any(|visited_point| !visited_point.visited)
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct VisitedPoint {
     pub visited: bool,
     pub point: Vec2,

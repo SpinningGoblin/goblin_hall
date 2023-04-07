@@ -16,6 +16,7 @@ mod resources;
 mod sets;
 mod state;
 mod systems;
+mod utils;
 
 fn main() {
     let game_config = resources::config::load_game_configuration().unwrap();
@@ -54,9 +55,11 @@ fn main() {
 
     let character_job_set = (
         systems::jobs::assign_job,
-        systems::tasks::build_todo,
+        systems::tasks::assign_explorer_task,
+        systems::tasks::assign_miner_task,
+        systems::tasks::assign_builder_task,
         systems::tasks::do_task_work.run_if(systems::world::tick_just_finished),
-        systems::tasks::remove_todo,
+        systems::tasks::remove_task,
     )
         .in_set(Sets::CharacterJobs)
         .in_set(OnUpdate(AppState::InGame));

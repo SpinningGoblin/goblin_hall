@@ -1,9 +1,11 @@
+use bevy::prelude::Component;
+
 use crate::components::{
     movement::Path,
     tasks::{ExplorationTarget, MiningTarget, SetupStorageArea},
 };
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Component)]
 pub enum Task {
     Walk(Path),
     Mine(MiningTarget),

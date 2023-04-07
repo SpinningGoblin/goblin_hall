@@ -1,19 +1,24 @@
-use bevy::prelude::{Commands, Entity, Query, Transform, Without};
+use bevy::prelude::{info, Commands, Entity, Query, Transform, Without};
 
 use crate::{
     components::{
         characters::Character,
-        jobs::Job,
+        jobs::{Builder, Explorer, Miner},
         structures::{GridBody, Mineable},
+        zones::{ExplorationZone, SetupStorageAreaZone},
         Map,
     },
     resources::config::grid::grid_coordinate_from_world,
 };
 
+type WithoutJob = (Without<Miner>, Without<Explorer>, Without<Builder>);
+
 pub fn assign_job(
     mut commands: Commands,
-    query: Query<(&Character, &Transform, Entity), Without<Job>>,
+    query: Query<(&Character, &Transform, Entity), WithoutJob>,
     structure_query: Query<(&Mineable, &GridBody)>,
+    exploration_zone_query: Query<&ExplorationZone>,
+    setup_storage_zone_query: Query<&SetupStorageAreaZone>,
     map_query: Query<&Map>,
 ) {
     let Ok(map) = map_query.get_single() else {
@@ -36,14 +41,25 @@ pub fn assign_job(
         let visibility_box = character.visibility_box(character_coordinate);
         let structures_in_range = structure_query
             .into_iter()
-            .filter(|(_, body)| visibility_box.contains(&body.center_coordinate))
-            .next()
-            .is_some();
+            .any(|(_, body)| visibility_box.contains(&body.center_coordinate));
 
-        if !structures_in_range {
-            commands.entity(entity).insert(Job::Explorer);
+        let has_exploration_zone = exploration_zone_query.iter().next().is_some();
+        let has_setup_storage_zone = setup_storage_zone_query.iter().next().is_some();
+
+        let mut entity_commands = commands.entity(entity);
+
+        if has_setup_storage_zone {
+            info!("Making builder");
+            entity_commands.insert(Builder);
+        } else if has_exploration_zone {
+            info!("Making Explorer from exploration zone");
+            entity_commands.insert(Explorer);
+        } else if structures_in_range {
+            info!("Making miner");
+            entity_commands.insert(Miner);
         } else {
-            commands.entity(entity).insert(Job::Miner);
+            info!("Making default Explorer job");
+            entity_commands.insert(Explorer);
         }
     }
 }
