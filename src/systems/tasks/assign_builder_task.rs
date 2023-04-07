@@ -1,4 +1,4 @@
-use bevy::prelude::{Commands, Entity, Query, Transform, With, Without};
+use bevy::prelude::{Commands, Entity, Query, Transform, With};
 
 use crate::{
     components::{
@@ -6,7 +6,7 @@ use crate::{
         jobs::Builder,
         movement::{Path, VisitedPoint},
         structures::GridBody,
-        tasks::{SetupStorageArea, Task},
+        tasks::{SetupStorageArea, SetupStorageAreaTask, WithoutTask},
         zones::SetupStorageAreaZone,
         GridBox, Map,
     },
@@ -16,7 +16,7 @@ use crate::{
 
 type CharacterWithTransform = (&'static Character, Entity, &'static Transform);
 
-type BuilderWithoutTask = (With<Builder>, Without<Task>);
+type BuilderWithoutTask = (With<Builder>, WithoutTask);
 
 pub fn assign_builder_task(
     mut commands: Commands,
@@ -65,19 +65,21 @@ fn build_task(
     visibility_box: &GridBox,
     body: &GridBody,
     entity: &Entity,
-) -> Option<Task> {
+) -> Option<SetupStorageAreaTask> {
     path_to_point(map, &visibility_box.center, &body.center_coordinate).map(|path| {
-        Task::SetupStorageArea(SetupStorageArea {
-            done: false,
-            entity: Some(*entity),
-            coordinate: body.center_coordinate,
-            path: Path {
-                direction: None,
-                points: path
-                    .iter()
-                    .map(|point| VisitedPoint::from(*point))
-                    .collect(),
+        SetupStorageAreaTask {
+            setup_area: SetupStorageArea {
+                done: false,
+                entity: Some(*entity),
+                coordinate: body.center_coordinate,
+                path: Path {
+                    direction: None,
+                    points: path
+                        .iter()
+                        .map(|point| VisitedPoint::from(*point))
+                        .collect(),
+                },
             },
-        })
+        }
     })
 }

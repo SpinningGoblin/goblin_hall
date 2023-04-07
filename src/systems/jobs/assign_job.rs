@@ -1,4 +1,4 @@
-use bevy::prelude::{Commands, Entity, Query, Without};
+use bevy::prelude::{info, Commands, Entity, Query, Without};
 
 use crate::components::{
     characters::Character,
@@ -19,6 +19,7 @@ pub fn assign_job(
         let (_, mut job_priority, entity) = character_bundle;
 
         let mut entity_commands = commands.entity(entity);
+        info!("{:?}", &job_priority);
         match job_priority.top_priority() {
             JobType::Miner => entity_commands.insert(Miner),
             JobType::Explorer => entity_commands.insert(Explorer),

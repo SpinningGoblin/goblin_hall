@@ -1,13 +1,13 @@
-use bevy::prelude::{Commands, Entity, Query, Transform, With, Without};
+use bevy::prelude::{Commands, Entity, Query, Transform, With};
 use strum::IntoEnumIterator;
 
 use crate::{
     components::{
         characters::Character,
-        jobs::{ExplorationHistory, Explorer, JobType, PreviousJob},
+        jobs::{ExplorationHistory, Explorer, PreviousExplorations},
         movement::{Direction, Path, VisitedPoint},
         structures::GridBody,
-        tasks::{ExplorationTarget, Task},
+        tasks::{ClearExplorationTargetTask, ExplorationTarget, WalkTask, WithoutTask},
         zones::ExplorationZone,
         GridBox, Map,
     },
@@ -19,10 +19,15 @@ type CharacterWithTransform = (
     &'static Character,
     Entity,
     &'static Transform,
-    Option<&'static PreviousJob>,
+    &'static PreviousExplorations,
 );
 
-type ExplorerWithoutTask = (With<Explorer>, Without<Task>);
+type ExplorerWithoutTask = (With<Explorer>, WithoutTask);
+
+enum ExplorerTask {
+    Walk(WalkTask),
+    ClearExploration(ClearExplorationTargetTask),
+}
 
 pub fn assign_explorer_task(
     mut commands: Commands,
@@ -43,7 +48,7 @@ pub fn assign_explorer_task(
     let mut used_zones: Vec<Entity> = Vec::new();
 
     for character_bundle in query.iter() {
-        let (character, entity, transform, possible_previous_job) = character_bundle;
+        let (character, entity, transform, previous_explorations) = character_bundle;
 
         let character_coordinate = grid_coordinate_from_world(
             &transform.translation.truncate(),
@@ -61,7 +66,7 @@ pub fn assign_explorer_task(
             &mut used_directions,
             map,
             &visibility_box,
-            possible_previous_job,
+            previous_explorations,
             exploration_history,
             exploration_zone,
         );
@@ -71,7 +76,14 @@ pub fn assign_explorer_task(
         }
 
         if let Some(task) = possible_task {
-            commands.entity(entity).insert(task);
+            match task {
+                ExplorerTask::Walk(it) => {
+                    commands.entity(entity).insert(it);
+                }
+                ExplorerTask::ClearExploration(it) => {
+                    commands.entity(entity).insert(it);
+                }
+            };
         }
     }
 }
@@ -80,20 +92,22 @@ fn build_explore_task(
     used_directions: &mut Vec<Direction>,
     map: &Map,
     visibility_box: &GridBox,
-    possible_previous_job: Option<&PreviousJob>,
+    previous_explorations: &PreviousExplorations,
     exploration_history: &ExplorationHistory,
     exploration_zone: Option<&(&GridBody, Entity)>,
-) -> Option<Task> {
+) -> Option<ExplorerTask> {
     let task = if let Some((body, entity)) = exploration_zone {
         path_to_point(map, &visibility_box.center, &body.center_coordinate).map(|path| {
-            Task::ClearExplorationTarget(ExplorationTarget {
-                entity: Some(*entity),
-                path: Path {
-                    direction: None,
-                    points: path
-                        .iter()
-                        .map(|point| VisitedPoint::from(*point))
-                        .collect(),
+            ExplorerTask::ClearExploration(ClearExplorationTargetTask {
+                target: ExplorationTarget {
+                    entity: Some(*entity),
+                    path: Path {
+                        direction: None,
+                        points: path
+                            .iter()
+                            .map(|point| VisitedPoint::from(*point))
+                            .collect(),
+                    },
                 },
             })
         })
@@ -102,24 +116,16 @@ fn build_explore_task(
     };
 
     task.or_else(|| {
-        possible_previous_job
-            .filter(|previous_job| matches!(previous_job.job, JobType::Explorer))
-            .and_then(|previous_job| {
-                previous_job.tasks.iter().find_map(|task| match task {
-                    Task::Walk(path) => path.direction,
-                    _ => None,
-                })
-            })
-            .and_then(|direction| {
-                find_path(
-                    map,
-                    &visibility_box.farthest_coordinate_at_direction(&direction),
-                    &visibility_box.center,
-                    Some(direction),
-                    exploration_history,
-                )
-                .map(Task::Walk)
-            })
+        previous_explorations.direction.and_then(|direction| {
+            find_path(
+                map,
+                &visibility_box.farthest_coordinate_at_direction(&direction),
+                &visibility_box.center,
+                Some(direction),
+                exploration_history,
+            )
+            .map(|path| ExplorerTask::Walk(WalkTask { path }))
+        })
     })
     .or_else(|| {
         Direction::iter()
@@ -137,7 +143,7 @@ fn build_explore_task(
                 if let Some(direction) = path.direction {
                     used_directions.push(direction);
                 }
-                Task::Walk(path)
+                ExplorerTask::Walk(WalkTask { path })
             })
     })
 }

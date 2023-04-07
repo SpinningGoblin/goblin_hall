@@ -1,4 +1,4 @@
-use bevy::prelude::{Query, Transform};
+use bevy::prelude::{info, Query, Transform};
 
 use crate::{
     components::{
@@ -34,5 +34,7 @@ pub fn assign_miner_priority(
             .any(|(_, body)| visibility_box.contains(&body.center_coordinate));
 
         job_priority.miner = structures_in_range;
+
+        info!("{:?}", &job_priority);
     }
 }

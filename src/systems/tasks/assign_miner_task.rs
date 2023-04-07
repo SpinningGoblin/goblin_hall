@@ -1,4 +1,4 @@
-use bevy::prelude::{Commands, Entity, Query, Transform, With, Without};
+use bevy::prelude::{Commands, Entity, Query, Transform, With};
 use tdlg::map::layers::{LayerType, StructureType};
 
 use crate::{
@@ -7,14 +7,14 @@ use crate::{
         jobs::Miner,
         movement::{Path, VisitedPoint},
         structures::{GridBody, Mineable},
-        tasks::{MiningTarget, Task},
+        tasks::{MineTask, MiningTarget, WithoutTask},
         GridBox, Map,
     },
     resources::config::grid::{grid_coordinate_from_world, pathfind},
 };
 
 type CharacterTransform = (&'static Character, Entity, &'static Transform);
-type MinerWithoutTask = (With<Miner>, Without<Task>);
+type MinerWithoutTask = (With<Miner>, WithoutTask);
 
 pub fn assign_miner_task(
     mut commands: Commands,
@@ -53,7 +53,7 @@ fn build_miner_task(
     visibility_box: &GridBox,
     mineable_query: &Query<(&Mineable, &GridBody, Entity)>,
     map: &Map,
-) -> Option<Task> {
+) -> Option<MineTask> {
     let mut seen_structures: Vec<(&Mineable, &GridBody, Entity)> = mineable_query
         .iter()
         .filter(|(structure, body, _)| {
@@ -67,29 +67,33 @@ fn build_miner_task(
         .iter()
         .find_map(|(structure, body, entity)| {
             if body.center_coordinate.distance(&visibility_box.center) <= 1 {
-                Some(Task::Mine(MiningTarget {
-                    entity: Some(*entity),
-                    layer_type: Some(structure.layer_type),
-                    coordinate: body.center_coordinate,
-                    path: Path {
-                        direction: None,
-                        points: Vec::new(),
-                    },
-                }))
-            } else {
-                pathfind(map, &visibility_box.center, &body.center_coordinate).map(|path| {
-                    Task::Mine(MiningTarget {
+                Some(MineTask {
+                    target: MiningTarget {
                         entity: Some(*entity),
                         layer_type: Some(structure.layer_type),
                         coordinate: body.center_coordinate,
                         path: Path {
                             direction: None,
-                            points: path
-                                .iter()
-                                .map(|point| VisitedPoint::from(*point))
-                                .collect(),
+                            points: Vec::new(),
                         },
-                    })
+                    },
+                })
+            } else {
+                pathfind(map, &visibility_box.center, &body.center_coordinate).map(|path| {
+                    MineTask {
+                        target: MiningTarget {
+                            entity: Some(*entity),
+                            layer_type: Some(structure.layer_type),
+                            coordinate: body.center_coordinate,
+                            path: Path {
+                                direction: None,
+                                points: path
+                                    .iter()
+                                    .map(|point| VisitedPoint::from(*point))
+                                    .collect(),
+                            },
+                        },
+                    }
                 })
             }
         })

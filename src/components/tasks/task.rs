@@ -5,24 +5,46 @@ use crate::components::{
     tasks::{ExplorationTarget, MiningTarget, SetupStorageArea},
 };
 
-#[derive(Clone, Debug, Component)]
-pub enum Task {
-    Walk(Path),
-    Mine(MiningTarget),
-    ClearExplorationTarget(ExplorationTarget),
-    SetupStorageArea(SetupStorageArea),
+#[derive(Clone, Component, Debug)]
+pub struct WalkTask {
+    pub path: Path,
 }
 
-impl Task {
+impl WalkTask {
     pub fn is_complete(&self) -> bool {
-        match self {
-            Task::Walk(path) => path
-                .points
-                .iter()
-                .all(|visited_point| visited_point.visited),
-            Task::Mine(target) => target.entity.is_none(),
-            Task::ClearExplorationTarget(target) => target.entity.is_none(),
-            Task::SetupStorageArea(setup) => setup.done,
-        }
+        !self.path.incomplete()
+    }
+}
+
+#[derive(Clone, Component, Debug)]
+pub struct MineTask {
+    pub target: MiningTarget,
+}
+
+impl MineTask {
+    pub fn is_complete(&self) -> bool {
+        !self.target.path.incomplete() && self.target.entity.is_none()
+    }
+}
+
+#[derive(Clone, Component, Debug)]
+pub struct ClearExplorationTargetTask {
+    pub target: ExplorationTarget,
+}
+
+impl ClearExplorationTargetTask {
+    pub fn is_complete(&self) -> bool {
+        !self.target.path.incomplete() && self.target.entity.is_none()
+    }
+}
+
+#[derive(Clone, Component, Debug)]
+pub struct SetupStorageAreaTask {
+    pub setup_area: SetupStorageArea,
+}
+
+impl SetupStorageAreaTask {
+    pub fn is_complete(&self) -> bool {
+        self.setup_area.done
     }
 }

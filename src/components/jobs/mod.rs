@@ -7,5 +7,5 @@ mod without_job;
 pub use exploration_history::ExplorationHistory;
 pub use job::{Builder, Explorer, Job, JobType, Miner};
 pub use job_priority::JobPriority;
-pub use previous_job::PreviousJob;
+pub use previous_job::PreviousExplorations;
 pub use without_job::WithoutJob;

@@ -69,8 +69,10 @@ fn main() {
         systems::tasks::assign_explorer_task,
         systems::tasks::assign_miner_task,
         systems::tasks::assign_builder_task,
-        systems::tasks::do_task_work.run_if(systems::world::tick_just_finished),
-        systems::tasks::remove_task,
+        systems::tasks::do_walk_work.run_if(systems::world::tick_just_finished),
+        systems::tasks::do_mining_work.run_if(systems::world::tick_just_finished),
+        systems::tasks::do_clear_exploration_work.run_if(systems::world::tick_just_finished),
+        systems::tasks::do_setup_storage_work.run_if(systems::world::tick_just_finished),
     )
         .in_set(Sets::CharacterTasks)
         .in_set(OnUpdate(AppState::InGame));
