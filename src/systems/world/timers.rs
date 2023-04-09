@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::{info, Query, Res, ResMut},
-    time::Time,
-};
+use bevy::prelude::{Query, Res, ResMut, Time};
 
 use crate::{components::World, resources::config::WorldTickTimer};
 
@@ -14,10 +11,6 @@ pub fn tick_game_world(
         return;
     };
     world.tick_just_finished = timer.0.tick(time.delta()).just_finished();
-
-    if world.tick_just_finished {
-        info!("world tick finished")
-    }
 }
 
 pub fn tick_just_finished(world_query: Query<&World>) -> bool {
