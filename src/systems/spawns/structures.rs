@@ -1,10 +1,13 @@
 use bevy::{
-    prelude::{default, info, AssetServer, Commands, Query, Res, Transform, Vec3},
+    prelude::{default, AssetServer, Commands, Query, Res, Transform, Vec3},
     sprite::{SpriteSheetBundle, TextureAtlasSprite},
 };
 
 use crate::{
-    components::{structures::StorageArea, Map, StructureSpawns},
+    components::{
+        structures::{GridBody, StorageArea},
+        Map, StructureSpawns,
+    },
     resources::{
         config::{grid::world_coordinate_from_grid, GameConfiguration},
         sprites::Atlas,
@@ -32,7 +35,6 @@ pub fn structures(
         match spawnable.spawn_type {
             crate::components::StructureSpawnType::StorageArea => {
                 if let Some(zone_config) = game_config.zone_config("storage_area") {
-                    info!("{}", &zone_config.overlay.path);
                     let structure_handle = asset_server.get_handle(&zone_config.overlay.path);
                     let target_index = atlas
                         .texture_atlas
@@ -54,7 +56,10 @@ pub fn structures(
                             texture_atlas: atlas.atlas_handle.clone(),
                             ..default()
                         })
-                        .insert(StorageArea {});
+                        .insert(GridBody {
+                            center_coordinate: spawnable.spawn_coordinate.coordinate,
+                        })
+                        .insert(StorageArea::default());
                 }
             }
         }
