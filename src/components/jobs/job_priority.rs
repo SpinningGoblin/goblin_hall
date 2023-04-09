@@ -7,6 +7,7 @@ pub struct JobPriority {
     pub explorer: bool,
     pub builder: bool,
     pub miner: bool,
+    pub gatherer: bool,
 }
 
 impl JobPriority {
@@ -15,6 +16,8 @@ impl JobPriority {
             Some(JobType::Builder)
         } else if self.miner {
             Some(JobType::Miner)
+        } else if self.gatherer {
+            Some(JobType::Gatherer)
         } else if self.explorer {
             Some(JobType::Explorer)
         } else {
@@ -27,6 +30,7 @@ impl JobPriority {
         self.builder = false;
         self.explorer = false;
         self.miner = false;
+        self.gatherer = false;
     }
 }
 
@@ -42,6 +46,7 @@ mod tests {
             builder: true,
             explorer: true,
             miner: true,
+            gatherer: true,
         };
 
         priority.reset();
@@ -49,6 +54,7 @@ mod tests {
         assert!(!priority.builder);
         assert!(!priority.explorer);
         assert!(!priority.miner);
+        assert!(!priority.gatherer);
     }
 
     #[test]
@@ -59,10 +65,11 @@ mod tests {
     }
 
     #[test]
-    fn builder_over_miner() {
+    fn builder_over_all() {
         let priority = JobPriority {
             miner: true,
             builder: true,
+            gatherer: true,
             explorer: true,
         };
 
@@ -70,13 +77,26 @@ mod tests {
     }
 
     #[test]
-    fn miner_over_explorer() {
+    fn miner_over_gatherer() {
         let priority = JobPriority {
             miner: true,
             builder: false,
+            gatherer: true,
             explorer: true,
         };
 
         assert!(matches!(priority.top_priority(), JobType::Miner));
+    }
+
+    #[test]
+    fn gatherer_over_explorer() {
+        let priority = JobPriority {
+            miner: false,
+            builder: false,
+            gatherer: true,
+            explorer: true,
+        };
+
+        assert!(matches!(priority.top_priority(), JobType::Gatherer));
     }
 }

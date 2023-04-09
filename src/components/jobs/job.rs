@@ -1,10 +1,11 @@
 use bevy::prelude::Component;
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug)]
 pub enum JobType {
     Miner,
     Explorer,
     Builder,
+    Gatherer,
 }
 
 impl Default for JobType {
@@ -15,6 +16,15 @@ impl Default for JobType {
 
 pub trait Job {
     fn job_type(&self) -> JobType;
+}
+
+#[derive(Component, Clone, Debug)]
+pub struct Gatherer;
+
+impl Job for Gatherer {
+    fn job_type(&self) -> JobType {
+        JobType::Gatherer
+    }
 }
 
 #[derive(Component, Clone, Debug)]
