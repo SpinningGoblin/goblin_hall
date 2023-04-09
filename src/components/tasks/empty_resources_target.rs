@@ -1,16 +1,15 @@
 use bevy::prelude::Entity;
-use tdlg::map::cells::Coordinate;
 
 use crate::components::movement::Path;
 
 #[derive(Clone, Debug)]
-pub struct MiningTarget {
-    pub entity: Option<Entity>,
-    pub coordinate: Coordinate,
+pub struct EmptyResourcesTarget {
     pub path: Path,
+    pub storage_area: Entity,
+    pub done: bool,
 }
 
-impl MiningTarget {
+impl EmptyResourcesTarget {
     pub fn path_incomplete(&self) -> bool {
         self.path.incomplete()
     }

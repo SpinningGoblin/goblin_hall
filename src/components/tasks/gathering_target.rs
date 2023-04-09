@@ -4,13 +4,13 @@ use tdlg::map::cells::Coordinate;
 use crate::components::movement::Path;
 
 #[derive(Clone, Debug)]
-pub struct MiningTarget {
+pub struct GatheringTarget {
     pub entity: Option<Entity>,
     pub coordinate: Coordinate,
     pub path: Path,
 }
 
-impl MiningTarget {
+impl GatheringTarget {
     pub fn path_incomplete(&self) -> bool {
         self.path.incomplete()
     }
