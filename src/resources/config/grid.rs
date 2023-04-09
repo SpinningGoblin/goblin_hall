@@ -27,18 +27,6 @@ pub fn grid_coordinate_from_world(
     Coordinate::from((x, y))
 }
 
-#[allow(dead_code)]
-pub fn estimated_distance(
-    start: &Coordinate,
-    end: &Vec2,
-    map_size: u16,
-    tile_size: f32,
-) -> (Coordinate, u32) {
-    let grid_end = grid_coordinate_from_world(end, map_size, tile_size);
-    (grid_end, grid_end.distance(start))
-}
-
-#[allow(dead_code)]
 pub fn pathfind(map: &Map, start: &Coordinate, end: &Coordinate) -> Option<Vec<Vec2>> {
     astar(
         start,
