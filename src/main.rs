@@ -50,20 +50,16 @@ fn main() {
         .in_set(OnUpdate(AppState::InGame))
         .in_set(Sets::Tick);
 
-    // TODO: I want to break apart the job/todo/tasks a bit so it's more composable and the systems can be
-    // smaller and have less dependencies.
-    // I should be able to have each character have their currently assigned task, and also have a job.
-    // Do I need the Todo idea at all? Do I want a list of tasks, or should I just assign jobs and then
-    // just reassign the jobs occasionally and figure out the tasks they should be doing based on their job.
-
     let assign_job_set = (
         systems::jobs::assign_miner_priority,
         systems::jobs::assign_builder_priority,
         systems::jobs::assign_explorer_priority,
+        systems::jobs::assign_gatherer_priority,
         systems::jobs::assign_job
             .after(systems::jobs::assign_miner_priority)
             .after(systems::jobs::assign_builder_priority)
-            .after(systems::jobs::assign_explorer_priority),
+            .after(systems::jobs::assign_explorer_priority)
+            .after(systems::jobs::assign_gatherer_priority),
     )
         .in_set(Sets::CharacterJobs)
         .in_set(OnUpdate(AppState::InGame));
@@ -72,10 +68,13 @@ fn main() {
         systems::tasks::assign_explorer_task,
         systems::tasks::assign_miner_task,
         systems::tasks::assign_builder_task,
+        systems::tasks::assign_gatherer_task,
         systems::tasks::do_walk_work.run_if(systems::world::tick_just_finished),
         systems::tasks::do_mining_work.run_if(systems::world::tick_just_finished),
         systems::tasks::do_clear_exploration_work.run_if(systems::world::tick_just_finished),
         systems::tasks::do_setup_storage_work.run_if(systems::world::tick_just_finished),
+        systems::tasks::do_gather_work.run_if(systems::world::tick_just_finished),
+        systems::tasks::do_empty_resources_work.run_if(systems::world::tick_just_finished),
     )
         .in_set(Sets::CharacterTasks)
         .after(Sets::CharacterJobs)
