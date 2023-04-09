@@ -63,38 +63,32 @@ fn build_miner_task(
     seen_structures
         .sort_by_key(|(_, body, _)| body.center_coordinate.distance(&visibility_box.center));
 
-    seen_structures
-        .iter()
-        .find_map(|(structure, body, entity)| {
-            if body.center_coordinate.distance(&visibility_box.center) <= 1 {
-                Some(MineTask {
-                    target: MiningTarget {
-                        entity: Some(*entity),
-                        layer_type: Some(structure.layer_type),
-                        coordinate: body.center_coordinate,
-                        path: Path {
-                            direction: None,
-                            points: Vec::new(),
-                        },
+    seen_structures.iter().find_map(|(_, body, entity)| {
+        if body.center_coordinate.distance(&visibility_box.center) <= 1 {
+            Some(MineTask {
+                target: MiningTarget {
+                    entity: Some(*entity),
+                    coordinate: body.center_coordinate,
+                    path: Path {
+                        direction: None,
+                        points: Vec::new(),
                     },
-                })
-            } else {
-                pathfind(map, &visibility_box.center, &body.center_coordinate).map(|path| {
-                    MineTask {
-                        target: MiningTarget {
-                            entity: Some(*entity),
-                            layer_type: Some(structure.layer_type),
-                            coordinate: body.center_coordinate,
-                            path: Path {
-                                direction: None,
-                                points: path
-                                    .iter()
-                                    .map(|point| VisitedPoint::from(*point))
-                                    .collect(),
-                            },
-                        },
-                    }
-                })
-            }
-        })
+                },
+            })
+        } else {
+            pathfind(map, &visibility_box.center, &body.center_coordinate).map(|path| MineTask {
+                target: MiningTarget {
+                    entity: Some(*entity),
+                    coordinate: body.center_coordinate,
+                    path: Path {
+                        direction: None,
+                        points: path
+                            .iter()
+                            .map(|point| VisitedPoint::from(*point))
+                            .collect(),
+                    },
+                },
+            })
+        }
+    })
 }

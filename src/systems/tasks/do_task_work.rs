@@ -1,6 +1,4 @@
-use bevy::prelude::{
-    info, Commands, Entity, EventWriter, Query, Transform, Visibility, With, Without,
-};
+use bevy::prelude::{info, Commands, Entity, EventWriter, Query, Transform, Visibility, Without};
 use tdlg::map::layers::{LayerType, StructureType};
 
 use crate::{
@@ -14,9 +12,6 @@ use crate::{
     events::PointVisited,
     utils,
 };
-
-type NotMineableCharacter = (With<Mineable>, Without<Character>);
-type TransformBody = (&'static Transform, &'static GridBody);
 
 pub fn do_walk_work(
     mut commands: Commands,
@@ -51,10 +46,12 @@ pub fn do_walk_work(
     }
 }
 
+type MineableBody = (&'static Transform, &'static GridBody, &'static Mineable);
+
 pub fn do_mining_work(
     mut commands: Commands,
     mut query: Query<(&mut MineTask, &mut Transform, &Character, Entity)>,
-    mineable_query: Query<TransformBody, NotMineableCharacter>,
+    mineable_query: Query<MineableBody, Without<Character>>,
     mut map_query: Query<&mut Map>,
     mut map_spawns_query: Query<&mut MapSpawns>,
     mut event_writer: EventWriter<PointVisited>,
@@ -78,15 +75,13 @@ pub fn do_mining_work(
                 &mut event_writer,
             );
         } else if let Some(entity) = mine_task.target.entity {
-            if let Ok((transform, body)) = mineable_query.get(entity) {
+            if let Ok((transform, body, mineable)) = mineable_query.get(entity) {
                 commands.entity(entity).despawn();
                 mine_task.target.entity = None;
 
-                if let Some(layer) = &mine_task.target.layer_type {
-                    map.current
-                        .grid_mut()
-                        .remove_layer(&mine_task.target.coordinate, *layer);
-                }
+                map.current
+                    .grid_mut()
+                    .remove_layer(&mine_task.target.coordinate, mineable.layer_type);
 
                 map_spawns.tdlg_spawnables.push(TdlgSpawnable {
                     layer_type: LayerType::Structure(StructureType::Rubble),
@@ -95,6 +90,7 @@ pub fn do_mining_work(
                         z_level: transform.translation.z,
                     },
                     visibility: Visibility::Visible,
+                    resource: Some(mineable.provides.clone()),
                 });
             }
         }
