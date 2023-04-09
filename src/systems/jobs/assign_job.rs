@@ -1,11 +1,9 @@
-use bevy::prelude::{info, Commands, Entity, Query, Without};
+use bevy::prelude::{info, Commands, Entity, Query};
 
 use crate::components::{
     characters::Character,
-    jobs::{Builder, Explorer, JobPriority, JobType, Miner},
+    jobs::{Builder, Explorer, Gatherer, JobPriority, JobType, Miner, WithoutJob},
 };
-
-type WithoutJob = (Without<Miner>, Without<Explorer>, Without<Builder>);
 
 pub fn assign_job(
     mut commands: Commands,
@@ -19,11 +17,15 @@ pub fn assign_job(
         let (_, mut job_priority, entity) = character_bundle;
 
         let mut entity_commands = commands.entity(entity);
-        info!("{:?}", &job_priority);
+        let top_priority = job_priority.top_priority();
+
+        info!("{:?}", &top_priority);
+
         match job_priority.top_priority() {
             JobType::Miner => entity_commands.insert(Miner),
             JobType::Explorer => entity_commands.insert(Explorer),
             JobType::Builder => entity_commands.insert(Builder),
+            JobType::Gatherer => entity_commands.insert(Gatherer),
         };
 
         job_priority.reset();
