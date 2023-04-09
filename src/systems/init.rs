@@ -1,12 +1,34 @@
 use bevy::prelude::{Commands, Query, ResMut, Visibility};
+use tdlg::map::layers::{LayerType, StructureType};
 
 use crate::{
     components::{
-        jobs::ExplorationHistory, movement::CameraMoveTimer, CharacterSpawnable, CharacterSpawns,
-        Map, MapSpawns, SpawnCoordinate, StructureSpawns, TdlgSpawnable, World,
+        jobs::ExplorationHistory, movement::CameraMoveTimer, resources::Resource,
+        CharacterSpawnable, CharacterSpawns, Map, MapSpawns, SpawnCoordinate, StructureSpawns,
+        TdlgSpawnable, World,
     },
     resources::config::GameConfiguration,
 };
+
+fn resource_for_layer(layer_type: &LayerType) -> Option<Resource> {
+    match layer_type {
+        LayerType::Empty
+        | LayerType::Entrance
+        | LayerType::Exit
+        | LayerType::Item(_)
+        | LayerType::Floor(_)
+        | LayerType::Note
+        | LayerType::Path => None,
+        LayerType::Structure(structure_type) => match structure_type {
+            StructureType::Rubble | StructureType::Rocks => Some(Resource::Stone(2)),
+            StructureType::Boulder => None,
+            StructureType::Door => None,
+            StructureType::Other => None,
+            StructureType::Table => None,
+            StructureType::Wall => None,
+        },
+    }
+}
 
 pub fn spawn_starting(
     mut commands: Commands,
@@ -27,12 +49,13 @@ pub fn spawn_starting(
     for cell in top_down_map.grid().cells() {
         for (index, layer) in cell.layers().iter().enumerate() {
             tdlg_spawnables.push(TdlgSpawnable {
-                layer_type: *layer,
                 spawn_coordinate: SpawnCoordinate {
                     coordinate: *cell.coordinate(),
                     z_level: index as f32,
                 },
                 visibility: Visibility::Hidden,
+                resource: resource_for_layer(layer),
+                layer_type: *layer,
             });
         }
     }
