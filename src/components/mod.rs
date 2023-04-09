@@ -4,6 +4,7 @@ mod grid_box;
 pub mod jobs;
 mod map;
 pub mod movement;
+pub mod resources;
 mod spawns;
 pub mod structures;
 pub mod target;
