@@ -1,40 +1,22 @@
-use bevy::prelude::{info, Query, Transform};
+use bevy::prelude::{Query, Visibility};
 
-use crate::{
-    components::{
-        characters::Character,
-        jobs::{JobPriority, WithoutJob},
-        structures::{GridBody, Mineable},
-        Map,
-    },
-    resources::config::grid::grid_coordinate_from_world,
+use crate::components::{
+    jobs::{JobPriority, WithoutJob},
+    structures::Mineable,
 };
 
 pub fn assign_miner_priority(
-    mut query: Query<(&mut JobPriority, &Transform, &Character), WithoutJob>,
-    structure_query: Query<(&Mineable, &GridBody)>,
-    map_query: Query<&Map>,
+    mut query: Query<&mut JobPriority, WithoutJob>,
+    structure_query: Query<(&Mineable, &Visibility)>,
 ) {
-    let Ok(map) = map_query.get_single() else {
-        return;
-    };
+    let visible_structures = structure_query
+        .into_iter()
+        .any(|(_, visibility)| matches!(visibility, Visibility::Visible | Visibility::Inherited));
 
-    for character_bundle in query.iter_mut() {
-        let (mut job_priority, transform, character) = character_bundle;
-
-        let character_coordinate = grid_coordinate_from_world(
-            &transform.translation.truncate(),
-            map.grid_size,
-            map.tile_size,
-        );
-
-        let visibility_box = character.visibility_box(character_coordinate);
-        let structures_in_range = structure_query
-            .into_iter()
-            .any(|(_, body)| visibility_box.contains(&body.center_coordinate));
-
-        job_priority.miner = structures_in_range;
-
-        info!("{:?}", &job_priority);
+    // TODO: If I ever have multiple characters, I will need to start
+    // assigning less priority to later characters, or figure out a way that
+    // the priority for characters who have recently been a miner is more or less.
+    for mut job_priority in query.iter_mut() {
+        job_priority.miner = visible_structures;
     }
 }
