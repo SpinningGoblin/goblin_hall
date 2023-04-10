@@ -1,4 +1,4 @@
-use bevy::prelude::{info, Commands, Entity, EventWriter, Query, Transform, Without};
+use bevy::prelude::{Commands, Entity, EventWriter, Query, Transform, Without};
 
 use crate::{
     components::{
@@ -68,11 +68,7 @@ pub fn do_empty_resources_work(
     for character_bundle in query.iter_mut() {
         let (mut empty_task, mut transform, _, entity, mut resource_inventory) = character_bundle;
 
-        if !empty_task.target.path_incomplete() {
-            info!("Should empty");
-        }
         if empty_task.target.path_incomplete() {
-            info!("Following the path");
             crate::utils::movement::visit_next_point(
                 &mut empty_task.target.path,
                 transform.as_mut(),
@@ -84,7 +80,7 @@ pub fn do_empty_resources_work(
             resource_inventory.empty_into(&mut storage_area);
             empty_task.target.done = true;
         } else {
-            info!("Something else?");
+            empty_task.target.done = true;
         }
 
         if empty_task.is_complete() {

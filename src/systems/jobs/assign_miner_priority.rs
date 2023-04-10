@@ -1,31 +1,48 @@
-use bevy::prelude::{Query, Visibility};
+use bevy::prelude::{Entity, Query, Transform, Visibility};
 
-use crate::components::{
-    jobs::{JobPriority, WithoutJob},
-    structures::Mineable,
+use crate::{
+    components::{
+        jobs::{JobPriority, WithoutJob},
+        structures::{GridBody, Mineable},
+        Map,
+    },
+    resources::config::grid::grid_coordinate_from_world,
 };
 
 pub fn assign_miner_priority(
-    mut query: Query<&mut JobPriority, WithoutJob>,
-    structure_query: Query<(&Mineable, &Visibility)>,
+    mut query: Query<(&mut JobPriority, &Transform), WithoutJob>,
+    mineable_query: Query<(&Mineable, &Visibility, &GridBody, Entity)>,
+    map_query: Query<&Map>,
 ) {
-    let visible_structures = structure_query
-        .into_iter()
-        .any(|(_, visibility)| matches!(visibility, Visibility::Visible | Visibility::Inherited));
+    let Ok(map) = map_query.get_single() else {
+        return;
+    };
 
-    // TODO: If I ever have multiple characters, I will need to start
-    // assigning less priority to later characters, or figure out a way that
-    // the priority for characters who have recently been a miner is more or less.
-    let mut miner_assigned = false;
-    for mut job_priority in query.iter_mut() {
-        job_priority.miner = if miner_assigned {
-            false
-        } else {
-            visible_structures
-        };
+    let mut closest_mineables: Vec<Entity> = Vec::new();
+    for (mut job_priority, transform) in query.iter_mut() {
+        let character_coordinate = grid_coordinate_from_world(
+            &transform.translation.truncate(),
+            map.grid_size,
+            map.tile_size,
+        );
+        let closest = mineable_query
+            .iter()
+            .filter(|(mineable, visibility, _, entity)| {
+                matches!(visibility, Visibility::Visible | Visibility::Inherited)
+                    && !mineable.targeted
+                    && !closest_mineables.contains(entity)
+            })
+            .min_by_key(|(_, _, body, _)| body.center_coordinate.distance(&character_coordinate))
+            .map(|(_, _, body, entity)| {
+                (
+                    body.center_coordinate.distance(&character_coordinate),
+                    entity,
+                )
+            });
 
-        if job_priority.miner {
-            miner_assigned = true;
+        if let Some((distance, entity)) = closest {
+            job_priority.miner.closest_mineable_distance = Some(distance as u128);
+            closest_mineables.push(entity);
         }
     }
 }

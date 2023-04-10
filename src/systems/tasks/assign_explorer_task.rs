@@ -46,7 +46,7 @@ pub fn assign_explorer_task(
     let mut exploration_zone_used = false;
 
     for character_bundle in query.iter() {
-        info!("{:?}", used_directions);
+        info!("used directions {:?}", used_directions);
         let (character, entity, transform, previous_explorations) = character_bundle;
 
         let character_coordinate = grid_coordinate_from_world(
@@ -151,10 +151,7 @@ fn build_explore_task(
                 Some(direction),
                 exploration_history,
             )
-            .filter(|path| {
-                info!("{:?}", path);
-                !path.points.is_empty()
-            })
+            .filter(|path| !path.points.is_empty())
             .map(|path| ExplorerTask::Walk(WalkTask { path }))
         })
     })

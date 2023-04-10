@@ -10,9 +10,16 @@ pub fn assign_builder_priority(
     mut query: Query<(&mut JobPriority, &Character), WithoutJob>,
     setup_storage_zone_query: Query<&SetupStorageAreaZone>,
 ) {
-    let has_setup_storage_zone = setup_storage_zone_query.iter().next().is_some();
+    let mut count_storage_setup_zones = setup_storage_zone_query
+        .iter()
+        .filter(|setup_zone| !setup_zone.targeted)
+        .collect::<Vec<_>>()
+        .len();
 
     for (mut job_priority, _) in query.iter_mut() {
-        job_priority.builder = has_setup_storage_zone;
+        if count_storage_setup_zones > 0 {
+            job_priority.builder.untargeted_storage_setup = true;
+            count_storage_setup_zones -= 1;
+        }
     }
 }

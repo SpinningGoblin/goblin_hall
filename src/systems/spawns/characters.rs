@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{default, info, AssetServer, Commands, Query, Res, Transform, Vec3},
+    prelude::{default, AssetServer, Commands, Query, Res, Transform, Vec3},
     sprite::{SpriteSheetBundle, TextureAtlasSprite},
 };
 
@@ -33,7 +33,7 @@ pub fn characters(
             map.grid_size,
             map.tile_size,
         );
-        info!("{:?}", coordinate);
+
         match spawnable.spawn_type {
             CreatureType::Goblin => {
                 if let Some(character_config) = game_config.character_config("little_goblin") {

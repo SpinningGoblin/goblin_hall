@@ -1,4 +1,4 @@
-use bevy::prelude::{info, Commands, Entity, EventWriter, Query, Transform, Visibility, Without};
+use bevy::prelude::{Commands, Entity, EventWriter, Query, Transform, Visibility, Without};
 use tdlg::map::layers::{LayerType, StructureType};
 
 use crate::{
@@ -127,7 +127,6 @@ pub fn do_clear_exploration_work(
                 &mut event_writer,
             );
         } else if let Some(entity) = clear_expliration_target.target.entity {
-            info!("despawning the exploration target");
             commands.entity(entity).despawn();
             clear_expliration_target.target.entity = None;
         }
