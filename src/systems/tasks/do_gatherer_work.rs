@@ -4,7 +4,7 @@ use crate::{
     components::{
         characters::{Character, ResourceInventory},
         jobs::Gatherer,
-        resources::Resource,
+        resources::Gatherable,
         structures::{GridBody, StorageArea},
         tasks::{EmptyResourcesTask, GatherTask},
     },
@@ -18,12 +18,12 @@ type GatherCharacter = (
     Entity,
     &'static mut ResourceInventory,
 );
-type ResourceBody = (&'static Transform, &'static GridBody, &'static Resource);
+type GatherableBody = (&'static Transform, &'static GridBody, &'static Gatherable);
 
 pub fn do_gather_work(
     mut commands: Commands,
     mut query: Query<GatherCharacter>,
-    resource_query: Query<ResourceBody, Without<Character>>,
+    resource_query: Query<GatherableBody, Without<Character>>,
     mut event_writer: EventWriter<PointVisited>,
 ) {
     for character_bundle in query.iter_mut() {
@@ -35,8 +35,8 @@ pub fn do_gather_work(
                 &mut event_writer,
             );
         } else if let Some(entity) = gather_task.target.entity {
-            if let Ok((_, _, resource)) = resource_query.get(entity) {
-                resource_inventory.add_resource(resource);
+            if let Ok((_, _, gatherable)) = resource_query.get(entity) {
+                resource_inventory.add_resource(&gatherable.resource);
                 commands.entity(entity).despawn();
                 gather_task.target.entity = None;
             }

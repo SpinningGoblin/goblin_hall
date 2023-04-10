@@ -9,8 +9,10 @@ pub trait Zone {
     fn zone_type(&self) -> ZoneType;
 }
 
-#[derive(Component, Clone, Copy, Debug)]
-pub struct ExplorationZone;
+#[derive(Component, Clone, Copy, Debug, Default)]
+pub struct ExplorationZone {
+    pub targeted: bool,
+}
 
 impl Zone for ExplorationZone {
     fn zone_type(&self) -> ZoneType {
@@ -18,8 +20,10 @@ impl Zone for ExplorationZone {
     }
 }
 
-#[derive(Component, Clone, Copy, Debug)]
-pub struct SetupStorageAreaZone;
+#[derive(Component, Clone, Copy, Debug, Default)]
+pub struct SetupStorageAreaZone {
+    pub targeted: bool,
+}
 
 impl Zone for SetupStorageAreaZone {
     fn zone_type(&self) -> ZoneType {

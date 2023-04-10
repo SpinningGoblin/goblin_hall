@@ -21,17 +21,13 @@ type BuilderWithoutTask = (With<Builder>, WithoutTask);
 pub fn assign_builder_task(
     mut commands: Commands,
     query: Query<CharacterWithTransform, BuilderWithoutTask>,
-    setup_storage_zone_query: Query<(&SetupStorageAreaZone, &GridBody, Entity)>,
+    mut setup_storage_zone_query: Query<(&mut SetupStorageAreaZone, &GridBody, Entity)>,
     map_query: Query<&Map>,
 ) {
     let Ok(map) = map_query.get_single() else {
         return;
     };
 
-    let setup_zones = setup_storage_zone_query
-        .iter()
-        .map(|(_, body, entity)| (body, entity))
-        .collect::<Vec<(&GridBody, Entity)>>();
     let mut used_zones: Vec<Entity> = Vec::new();
 
     for character_bundle in query.iter() {
@@ -44,14 +40,16 @@ pub fn assign_builder_task(
 
         let visibility_box = character.visibility_box(character_coordinate);
 
-        let possible_setup_zone = setup_zones
-            .iter()
-            .min_by_key(|(body, _)| body.center_coordinate.distance(&visibility_box.center));
+        let possible_setup_zone = setup_storage_zone_query
+            .iter_mut()
+            .filter(|(setup_zone, _, entity)| !setup_zone.targeted && !used_zones.contains(entity))
+            .min_by_key(|(_, body, _)| body.center_coordinate.distance(&visibility_box.center));
 
-        if let Some((body, setup_entity)) = possible_setup_zone {
+        if let Some((mut zone, body, setup_entity)) = possible_setup_zone {
             let possible_task = build_task(map, &visibility_box, body, setup_entity);
             if let Some(task) = possible_task {
-                used_zones.push(*setup_entity);
+                zone.targeted = true;
+                used_zones.push(setup_entity);
                 commands.entity(entity).insert(task);
             }
         } else {
@@ -64,13 +62,13 @@ fn build_task(
     map: &Map,
     visibility_box: &GridBox,
     body: &GridBody,
-    entity: &Entity,
+    entity: Entity,
 ) -> Option<SetupStorageAreaTask> {
     path_to_point(map, &visibility_box.center, &body.center_coordinate).map(|path| {
         SetupStorageAreaTask {
             setup_area: SetupStorageArea {
                 done: false,
-                entity: Some(*entity),
+                entity: Some(entity),
                 coordinate: body.center_coordinate,
                 path: Path {
                     direction: None,

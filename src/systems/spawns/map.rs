@@ -6,7 +6,7 @@ use tdlg::map::layers::{FloorType, LayerType, StructureType};
 
 use crate::{
     components::{
-        resources::Resource,
+        resources::{Gatherable, Resource},
         structures::{GridBody, Mineable, Structure},
         zones::ZoneType,
         Map, MapSpawns,
@@ -130,6 +130,7 @@ pub fn map(
                         .insert(Mineable {
                             layer_type: spawnable.layer_type,
                             provides: Resource::Stone(2),
+                            targeted: false,
                         });
                     spawn_commands
                 }),
@@ -224,7 +225,10 @@ pub fn map(
             });
 
             if let Some(resource) = &spawnable.resource {
-                spawn_commands.insert(resource.clone());
+                spawn_commands.insert(Gatherable {
+                    resource: resource.clone(),
+                    targeted: false,
+                });
             }
         }
     }

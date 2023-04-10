@@ -65,7 +65,7 @@ pub fn place_zone(
     });
 
     match zone_type {
-        ZoneType::Exploration => spawn_command.insert(ExplorationZone),
-        ZoneType::SetupStorageArea => spawn_command.insert(SetupStorageAreaZone),
+        ZoneType::Exploration => spawn_command.insert(ExplorationZone::default()),
+        ZoneType::SetupStorageArea => spawn_command.insert(SetupStorageAreaZone::default()),
     };
 }

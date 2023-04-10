@@ -1,4 +1,4 @@
-use bevy::prelude::{Commands, Entity, Query, Transform, With};
+use bevy::prelude::{info, Commands, Entity, Mut, Query, Transform, With};
 use strum::IntoEnumIterator;
 use tdlg::map::cells::Coordinate;
 
@@ -34,7 +34,7 @@ pub fn assign_explorer_task(
     mut commands: Commands,
     query: Query<CharacterWithTransform, ExplorerWithoutTask>,
     explore_history_query: Query<&ExplorationHistory>,
-    exploration_zone_query: Query<(&ExplorationZone, &GridBody, Entity)>,
+    mut exploration_zone_query: Query<(&mut ExplorationZone, &GridBody, Entity)>,
     map_query: Query<&Map>,
 ) {
     let (Ok(map), Ok(exploration_history)) = (map_query.get_single(), explore_history_query.get_single()) else {
@@ -42,13 +42,11 @@ pub fn assign_explorer_task(
     };
 
     let mut used_directions: Vec<Direction> = Vec::new();
-    let exploration_zones = exploration_zone_query
-        .iter()
-        .map(|(_, body, entity)| (body, entity))
-        .collect::<Vec<(&GridBody, Entity)>>();
-    let mut used_zones: Vec<Entity> = Vec::new();
+
+    let mut exploration_zone_used = false;
 
     for character_bundle in query.iter() {
+        info!("{:?}", used_directions);
         let (character, entity, transform, previous_explorations) = character_bundle;
 
         let character_coordinate = grid_coordinate_from_world(
@@ -58,10 +56,18 @@ pub fn assign_explorer_task(
         );
 
         let visibility_box = character.visibility_box(character_coordinate);
+        let exploration_zone = if exploration_zone_used {
+            None
+        } else {
+            exploration_zone_query
+                .iter_mut()
+                .filter(|(zone, _, _)| !zone.targeted)
+                .min_by_key(|(_, body, _)| body.center_coordinate.distance(&visibility_box.center))
+        };
 
-        let exploration_zone = exploration_zones
-            .iter()
-            .min_by_key(|(body, _)| body.center_coordinate.distance(&visibility_box.center));
+        if exploration_zone.is_some() {
+            exploration_zone_used = true;
+        }
 
         let possible_task = build_explore_task(
             &mut used_directions,
@@ -71,10 +77,6 @@ pub fn assign_explorer_task(
             exploration_history,
             exploration_zone,
         );
-
-        if let Some((_, entity)) = exploration_zone {
-            used_zones.push(*entity);
-        }
 
         if let Some(task) = possible_task {
             match task {
@@ -117,13 +119,15 @@ fn build_explore_task(
     visibility_box: &GridBox,
     previous_explorations: &PreviousExplorations,
     exploration_history: &ExplorationHistory,
-    exploration_zone: Option<&(&GridBody, Entity)>,
+    exploration_zone_bundle: Option<(Mut<ExplorationZone>, &GridBody, Entity)>,
 ) -> Option<ExplorerTask> {
-    let task = if let Some((body, entity)) = exploration_zone {
+    let task = if let Some((mut exploration_zone, body, entity)) = exploration_zone_bundle {
+        info!("exploration zone {:?}", entity);
         path_to_point(map, &visibility_box.center, &body.center_coordinate).map(|path| {
+            exploration_zone.targeted = true;
             ExplorerTask::ClearExploration(ClearExplorationTargetTask {
                 target: ExplorationTarget {
-                    entity: Some(*entity),
+                    entity: Some(entity),
                     path: Path {
                         direction: None,
                         points: path
@@ -147,6 +151,10 @@ fn build_explore_task(
                 Some(direction),
                 exploration_history,
             )
+            .filter(|path| {
+                info!("{:?}", path);
+                !path.points.is_empty()
+            })
             .map(|path| ExplorerTask::Walk(WalkTask { path }))
         })
     })

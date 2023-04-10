@@ -16,7 +16,16 @@ pub fn assign_miner_priority(
     // TODO: If I ever have multiple characters, I will need to start
     // assigning less priority to later characters, or figure out a way that
     // the priority for characters who have recently been a miner is more or less.
+    let mut miner_assigned = false;
     for mut job_priority in query.iter_mut() {
-        job_priority.miner = visible_structures;
+        job_priority.miner = if miner_assigned {
+            false
+        } else {
+            visible_structures
+        };
+
+        if job_priority.miner {
+            miner_assigned = true;
+        }
     }
 }

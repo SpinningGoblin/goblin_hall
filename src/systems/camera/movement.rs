@@ -15,8 +15,12 @@ pub fn move_camera(
     character_query: Query<(&Character, &Transform), Without<GameCamera>>,
     mut moved_to_character_once: Local<MovedToCharacterOnce>,
 ) {
-    let queries = (query.get_single_mut(), character_query.get_single());
-    let (Ok((_, movement, mut transform)), Ok((_, character_transform))) = queries else {
+    let Ok((_, movement, mut transform)) = query.get_single_mut() else {
+        return;
+    };
+
+    let character_bundle = character_query.iter().next();
+    let Some((_, character_transform)) = character_bundle else {
         return;
     };
 

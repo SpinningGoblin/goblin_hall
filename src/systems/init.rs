@@ -1,11 +1,14 @@
 use bevy::prelude::{Commands, Query, ResMut, Visibility};
-use tdlg::map::layers::{LayerType, StructureType};
+use tdlg::map::{
+    cells::Coordinate,
+    layers::{LayerType, StructureType},
+};
 
 use crate::{
     components::{
-        jobs::ExplorationHistory, movement::CameraMoveTimer, resources::Resource,
-        CharacterSpawnable, CharacterSpawns, Map, MapSpawns, SpawnCoordinate, StructureSpawns,
-        TdlgSpawnable, World,
+        characters::CreatureType, jobs::ExplorationHistory, movement::CameraMoveTimer,
+        resources::Resource, CharacterSpawnable, CharacterSpawns, Map, MapSpawns, SpawnCoordinate,
+        StructureSpawns, TdlgSpawnable, World,
     },
     resources::config::GameConfiguration,
 };
@@ -61,17 +64,30 @@ pub fn spawn_starting(
     }
 
     let spawnable = CharacterSpawnable {
-        spawn_type: crate::components::characters::CreatureType::Goblin,
+        spawn_type: CreatureType::Goblin,
         coordinate: SpawnCoordinate {
             coordinate: *top_down_map.entry(),
             z_level: 10.,
         },
     };
+    let other_coord =
+        Coordinate::from((top_down_map.entry().x() + 1, top_down_map.entry().y() + 1));
+
+    let spawnable_2 = CharacterSpawnable {
+        spawn_type: CreatureType::Goblin,
+        coordinate: SpawnCoordinate {
+            coordinate: other_coord,
+            z_level: 10.,
+        },
+    };
     match character_spawns_query.get_single_mut() {
-        Ok(mut character_spawns) => character_spawns.spawnables.push(spawnable),
+        Ok(mut character_spawns) => {
+            character_spawns.spawnables.push(spawnable);
+            character_spawns.spawnables.push(spawnable_2);
+        }
         Err(_) => {
             commands.spawn(CharacterSpawns {
-                spawnables: vec![spawnable],
+                spawnables: vec![spawnable, spawnable_2],
             });
         }
     };

@@ -7,4 +7,5 @@ use crate::components::resources::Resource;
 pub struct Mineable {
     pub layer_type: LayerType,
     pub provides: Resource,
+    pub targeted: bool,
 }

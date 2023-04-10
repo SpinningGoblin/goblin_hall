@@ -1,11 +1,9 @@
-use bevy::prelude::Component;
-
-#[derive(Component, Clone)]
+#[derive(Clone, Debug)]
 pub enum Resource {
     Stone(u8),
 }
 
-#[derive(Component, Clone)]
+#[derive(Clone)]
 pub enum ResourceBundle {
     Stone(u16),
 }

@@ -19,7 +19,7 @@ pub fn assign_job(
         let mut entity_commands = commands.entity(entity);
         let top_priority = job_priority.top_priority();
 
-        info!("{:?}", &top_priority);
+        info!("{:?} {:?}", &top_priority, entity);
 
         match job_priority.top_priority() {
             JobType::Miner => entity_commands.insert(Miner),
