@@ -6,9 +6,12 @@ use tdlg::map::{
 
 use crate::{
     components::{
-        characters::CreatureType, jobs::ExplorationHistory, movement::CameraMoveTimer,
-        resources::Resource, CharacterSpawnable, CharacterSpawns, Map, MapSpawns, SpawnCoordinate,
-        StructureSpawns, TdlgSpawnable, World,
+        characters::CreatureType,
+        jobs::{ExplorationHistory, GlobalAssignmentMode},
+        movement::CameraMoveTimer,
+        resources::Resource,
+        CharacterSpawnable, CharacterSpawns, Map, MapSpawns, SpawnCoordinate, StructureSpawns,
+        TdlgSpawnable, World, WorldTickCalculation,
     },
     resources::config::GameConfiguration,
 };
@@ -41,11 +44,14 @@ pub fn spawn_starting(
     structure_spawns_query: Query<&StructureSpawns>,
 ) {
     commands.spawn(World::default());
+    commands.spawn(WorldTickCalculation::Running);
     commands.spawn(CameraMoveTimer {
         timer: game_config.movement_timer(),
     });
 
     commands.spawn(ExplorationHistory::default());
+
+    commands.spawn(GlobalAssignmentMode::manual());
 
     let top_down_map = game_config.generate_top_down_map();
     let mut tdlg_spawnables: Vec<TdlgSpawnable> = Vec::new();
