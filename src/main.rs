@@ -38,12 +38,19 @@ fn main() {
         systems::camera::zoom_camera,
         systems::targets::move_target,
         systems::targets::swap_targets,
+        systems::jobs::swap_job_assignment_mode,
+        systems::world::pause_world_tick,
     )
         .in_set(OnUpdate(AppState::InGame))
         .in_set(Sets::Input);
 
-    let input_responses = (systems::zones::place_zone, systems::camera::move_camera)
+    let input_responses = (
+        systems::zones::place_zone,
+        systems::camera::move_camera,
+        systems::jobs::manually_assign_job,
+    )
         .in_set(OnUpdate(AppState::InGame))
+        .after(Sets::Input)
         .in_set(Sets::InputResponse);
 
     let tick_set = (systems::world::tick_game_world)
@@ -62,6 +69,7 @@ fn main() {
             .after(systems::jobs::assign_gatherer_priority),
     )
         .in_set(Sets::CharacterJobs)
+        .after(Sets::InputResponse)
         .in_set(OnUpdate(AppState::InGame));
 
     let character_job_set = (
