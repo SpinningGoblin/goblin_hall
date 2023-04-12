@@ -1,19 +1,25 @@
+mod assignment_mode;
 mod builder_priority;
 mod exploration_history;
 mod explorer_priority;
 mod gatherer_priority;
+mod global_assignment_mode;
 mod job;
 mod job_priority;
+mod manual_assignment;
 mod miner_priority;
 mod previous_job;
 mod without_job;
 
+pub use assignment_mode::AssignmentMode;
 pub use builder_priority::BuilderPriority;
 pub use exploration_history::ExplorationHistory;
 pub use explorer_priority::ExplorerPriority;
 pub use gatherer_priority::GathererPriority;
+pub use global_assignment_mode::GlobalAssignmentMode;
 pub use job::{Builder, Explorer, Gatherer, Job, JobType, Miner};
 pub use job_priority::JobPriority;
+pub use manual_assignment::ManualAssignment;
 pub use miner_priority::MinerPriority;
 pub use previous_job::PreviousExplorations;
 pub use without_job::WithoutJob;
