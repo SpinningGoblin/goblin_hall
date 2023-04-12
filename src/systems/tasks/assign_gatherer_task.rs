@@ -1,9 +1,9 @@
-use bevy::prelude::{Commands, Entity, Query, Transform, Visibility, With};
+use bevy::prelude::{Commands, Entity, Query, Transform, Visibility};
 
 use crate::{
     components::{
         characters::{Character, ResourceInventory},
-        jobs::Gatherer,
+        jobs::{Gatherer, Job, ManualAssignment},
         movement::{Path, VisitedPoint},
         resources::Gatherable,
         structures::{GridBody, StorageArea},
@@ -15,17 +15,18 @@ use crate::{
     resources::config::grid::{grid_coordinate_from_world, pathfind},
 };
 
-type CharacterTransform = (
+type GathererTransform = (
     &'static Character,
     Entity,
     &'static Transform,
     &'static ResourceInventory,
+    &'static Gatherer,
+    &'static ManualAssignment,
 );
-type GathererWithoutTask = (With<Gatherer>, WithoutTask);
 
 pub fn assign_gatherer_task(
     mut commands: Commands,
-    query: Query<CharacterTransform, GathererWithoutTask>,
+    query: Query<GathererTransform, WithoutTask>,
     mut gatherable_query: Query<(&mut Gatherable, &GridBody, &Visibility, Entity)>,
     storage_area_query: Query<(&StorageArea, &GridBody, Entity)>,
     map_query: Query<&Map>,
@@ -37,7 +38,8 @@ pub fn assign_gatherer_task(
     let mut used_gatherables: Vec<Entity> = Vec::new();
 
     for character_bundle in query.iter() {
-        let (character, entity, transform, resource_inventory) = character_bundle;
+        let (character, entity, transform, resource_inventory, gatherer, manual_assignment) =
+            character_bundle;
 
         let character_coordinate = grid_coordinate_from_world(
             &transform.translation.truncate(),
@@ -60,13 +62,14 @@ pub fn assign_gatherer_task(
             map,
         );
 
+        let mut entity_commands = commands.entity(entity);
         if let Some(task) = possible_task {
             match task {
-                GathererTask::Gather(it) => commands.entity(entity).insert(it),
-                GathererTask::Empty(it) => commands.entity(entity).insert(it),
+                GathererTask::Gather(it) => entity_commands.insert(it),
+                GathererTask::Empty(it) => entity_commands.insert(it),
             };
-        } else {
-            commands.entity(entity).remove::<Gatherer>();
+        } else if gatherer.is_automatically_assigned() || manual_assignment.will_reassign() {
+            entity_commands.remove::<Gatherer>();
         }
     }
 }

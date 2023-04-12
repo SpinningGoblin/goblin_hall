@@ -1,11 +1,11 @@
-use bevy::prelude::{info, Commands, Entity, Mut, Query, Transform, With};
+use bevy::prelude::{info, Commands, Entity, Mut, Query, Transform};
 use strum::IntoEnumIterator;
 use tdlg::map::cells::Coordinate;
 
 use crate::{
     components::{
         characters::Character,
-        jobs::{ExplorationHistory, Explorer, PreviousExplorations},
+        jobs::{ExplorationHistory, Explorer, Job, ManualAssignment, PreviousExplorations},
         movement::{Direction, Path, VisitedPoint},
         structures::GridBody,
         tasks::{ClearExplorationTargetTask, ExplorationTarget, WalkTask, WithoutTask},
@@ -16,14 +16,14 @@ use crate::{
     utils::movement::path_to_point,
 };
 
-type CharacterWithTransform = (
+type ExplorerTransform = (
     &'static Character,
     Entity,
     &'static Transform,
     &'static PreviousExplorations,
+    &'static Explorer,
+    &'static ManualAssignment,
 );
-
-type ExplorerWithoutTask = (With<Explorer>, WithoutTask);
 
 enum ExplorerTask {
     Walk(WalkTask),
@@ -32,7 +32,7 @@ enum ExplorerTask {
 
 pub fn assign_explorer_task(
     mut commands: Commands,
-    query: Query<CharacterWithTransform, ExplorerWithoutTask>,
+    query: Query<ExplorerTransform, WithoutTask>,
     explore_history_query: Query<&ExplorationHistory>,
     mut exploration_zone_query: Query<(&mut ExplorationZone, &GridBody, Entity)>,
     map_query: Query<&Map>,
@@ -45,9 +45,10 @@ pub fn assign_explorer_task(
 
     let mut exploration_zone_used = false;
 
-    for character_bundle in query.iter() {
+    for (character, entity, transform, previous_explorations, explorer, manual_assignment) in
+        query.iter()
+    {
         info!("used directions {:?}", used_directions);
-        let (character, entity, transform, previous_explorations) = character_bundle;
 
         let character_coordinate = grid_coordinate_from_world(
             &transform.translation.truncate(),
@@ -78,15 +79,19 @@ pub fn assign_explorer_task(
             exploration_zone,
         );
 
+        let mut entity_commands = commands.entity(entity);
+
         if let Some(task) = possible_task {
             match task {
                 ExplorerTask::Walk(it) => {
-                    commands.entity(entity).insert(it);
+                    entity_commands.insert(it);
                 }
                 ExplorerTask::ClearExploration(it) => {
-                    commands.entity(entity).insert(it);
+                    entity_commands.insert(it);
                 }
             };
+        } else if explorer.is_automatically_assigned() || manual_assignment.will_reassign() {
+            entity_commands.remove::<Explorer>();
         }
     }
 }

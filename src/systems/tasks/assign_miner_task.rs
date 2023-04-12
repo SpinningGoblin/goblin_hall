@@ -1,10 +1,10 @@
-use bevy::prelude::{Commands, Entity, Query, Transform, Visibility, With};
+use bevy::prelude::{Commands, Entity, Query, Transform, Visibility};
 use tdlg::map::layers::{LayerType, StructureType};
 
 use crate::{
     components::{
         characters::Character,
-        jobs::Miner,
+        jobs::{Job, ManualAssignment, Miner},
         movement::{Path, VisitedPoint},
         structures::{GridBody, Mineable},
         tasks::{MineTask, MiningTarget, WithoutTask},
@@ -13,12 +13,17 @@ use crate::{
     resources::config::grid::{grid_coordinate_from_world, pathfind},
 };
 
-type CharacterTransform = (&'static Character, Entity, &'static Transform);
-type MinerWithoutTask = (With<Miner>, WithoutTask);
+type MinerTransform = (
+    &'static Character,
+    Entity,
+    &'static Transform,
+    &'static Miner,
+    &'static ManualAssignment,
+);
 
 pub fn assign_miner_task(
     mut commands: Commands,
-    query: Query<CharacterTransform, MinerWithoutTask>,
+    query: Query<MinerTransform, WithoutTask>,
     mut mineable_query: Query<(&mut Mineable, &GridBody, &Visibility, Entity)>,
     map_query: Query<&Map>,
 ) {
@@ -28,7 +33,7 @@ pub fn assign_miner_task(
 
     let mut used_mineables: Vec<Entity> = Vec::new();
     for character_bundle in query.iter() {
-        let (character, entity, transform) = character_bundle;
+        let (character, entity, transform, miner, manual_assignment) = character_bundle;
 
         let character_coordinate = grid_coordinate_from_world(
             &transform.translation.truncate(),
@@ -45,10 +50,11 @@ pub fn assign_miner_task(
             &mut used_mineables,
         );
 
+        let mut entity_commands = commands.entity(entity);
         if let Some(task) = possible_task {
-            commands.entity(entity).insert(task);
-        } else {
-            commands.entity(entity).remove::<Miner>();
+            entity_commands.insert(task);
+        } else if miner.is_automatically_assigned() || manual_assignment.will_reassign() {
+            entity_commands.remove::<Miner>();
         }
     }
 }

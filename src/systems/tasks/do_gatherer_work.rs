@@ -3,7 +3,7 @@ use bevy::prelude::{Commands, Entity, EventWriter, Query, Transform, Without};
 use crate::{
     components::{
         characters::{Character, ResourceInventory},
-        jobs::Gatherer,
+        jobs::{Gatherer, Job, ManualAssignment},
         resources::Gatherable,
         structures::{GridBody, StorageArea},
         tasks::{EmptyResourcesTask, GatherTask},
@@ -17,6 +17,8 @@ type GatherCharacter = (
     &'static Character,
     Entity,
     &'static mut ResourceInventory,
+    &'static Gatherer,
+    &'static ManualAssignment,
 );
 type GatherableBody = (&'static Transform, &'static GridBody, &'static Gatherable);
 
@@ -27,7 +29,15 @@ pub fn do_gather_work(
     mut event_writer: EventWriter<PointVisited>,
 ) {
     for character_bundle in query.iter_mut() {
-        let (mut gather_task, mut transform, _, entity, mut resource_inventory) = character_bundle;
+        let (
+            mut gather_task,
+            mut transform,
+            _,
+            entity,
+            mut resource_inventory,
+            gatherer,
+            manual_assignment,
+        ) = character_bundle;
         if gather_task.target.path_incomplete() {
             crate::utils::movement::visit_next_point(
                 &mut gather_task.target.path,
@@ -43,10 +53,11 @@ pub fn do_gather_work(
         }
 
         if gather_task.is_complete() {
-            commands
-                .entity(entity)
-                .remove::<GatherTask>()
-                .remove::<Gatherer>();
+            let mut entity_commands = commands.entity(entity);
+            entity_commands.remove::<GatherTask>();
+            if gatherer.is_automatically_assigned() || manual_assignment.will_reassign() {
+                entity_commands.remove::<Gatherer>();
+            }
         }
     }
 }
@@ -57,6 +68,8 @@ type EmptyResourcesCharacter = (
     &'static Character,
     Entity,
     &'static mut ResourceInventory,
+    &'static Gatherer,
+    &'static ManualAssignment,
 );
 
 pub fn do_empty_resources_work(
@@ -66,7 +79,15 @@ pub fn do_empty_resources_work(
     mut event_writer: EventWriter<PointVisited>,
 ) {
     for character_bundle in query.iter_mut() {
-        let (mut empty_task, mut transform, _, entity, mut resource_inventory) = character_bundle;
+        let (
+            mut empty_task,
+            mut transform,
+            _,
+            entity,
+            mut resource_inventory,
+            gatherer,
+            manual_assignment,
+        ) = character_bundle;
 
         if empty_task.target.path_incomplete() {
             crate::utils::movement::visit_next_point(
@@ -84,10 +105,11 @@ pub fn do_empty_resources_work(
         }
 
         if empty_task.is_complete() {
-            commands
-                .entity(entity)
-                .remove::<EmptyResourcesTask>()
-                .remove::<Gatherer>();
+            let mut entity_commands = commands.entity(entity);
+            entity_commands.remove::<EmptyResourcesTask>();
+            if gatherer.is_automatically_assigned() || manual_assignment.will_reassign() {
+                entity_commands.remove::<Gatherer>();
+            }
         }
     }
 }

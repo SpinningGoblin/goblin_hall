@@ -6,7 +6,7 @@ use bevy::{
 use crate::{
     components::{
         characters::{Character, CreatureType, ResourceInventory},
-        jobs::{JobPriority, PreviousExplorations},
+        jobs::{JobPriority, ManualAssignment, PreviousExplorations},
         CharacterSpawns, Map,
     },
     resources::{
@@ -62,7 +62,8 @@ pub fn characters(
                         })
                         .insert(ResourceInventory::default())
                         .insert(PreviousExplorations::default())
-                        .insert(JobPriority::default());
+                        .insert(JobPriority::default())
+                        .insert(ManualAssignment::default());
                 }
             }
         }

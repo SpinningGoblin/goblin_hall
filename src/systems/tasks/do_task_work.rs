@@ -4,7 +4,7 @@ use tdlg::map::layers::{LayerType, StructureType};
 use crate::{
     components::{
         characters::Character,
-        jobs::{Builder, Explorer, Miner, PreviousExplorations},
+        jobs::{Builder, Explorer, Job, ManualAssignment, Miner, PreviousExplorations},
         structures::{GridBody, Mineable},
         tasks::{ClearExplorationTargetTask, MineTask, SetupStorageAreaTask, WalkTask},
         Map, MapSpawns, SpawnCoordinate, StructureSpawnable, StructureSpawns, TdlgSpawnable,
@@ -21,11 +21,21 @@ pub fn do_walk_work(
         &mut WalkTask,
         Entity,
         &mut PreviousExplorations,
+        &Explorer,
+        &ManualAssignment,
     )>,
     mut event_writer: EventWriter<PointVisited>,
 ) {
     for character_bundle in query.iter_mut() {
-        let (_, mut transform, mut walk_task, entity, mut previous_explorations) = character_bundle;
+        let (
+            _,
+            mut transform,
+            mut walk_task,
+            entity,
+            mut previous_explorations,
+            explorer,
+            manual_assignment,
+        ) = character_bundle;
 
         utils::movement::visit_next_point(
             &mut walk_task.path,
@@ -38,10 +48,12 @@ pub fn do_walk_work(
                 previous_explorations.direction = Some(*direction);
             }
 
-            commands
-                .entity(entity)
-                .remove::<WalkTask>()
-                .remove::<Explorer>();
+            let mut entity_commands = commands.entity(entity);
+            entity_commands.remove::<WalkTask>();
+
+            if explorer.is_automatically_assigned() || manual_assignment.will_reassign() {
+                entity_commands.remove::<Explorer>();
+            }
         }
     }
 }
@@ -50,7 +62,14 @@ type MineableBody = (&'static Transform, &'static GridBody, &'static Mineable);
 
 pub fn do_mining_work(
     mut commands: Commands,
-    mut query: Query<(&mut MineTask, &mut Transform, &Character, Entity)>,
+    mut query: Query<(
+        &mut MineTask,
+        &mut Transform,
+        &Character,
+        Entity,
+        &Miner,
+        &ManualAssignment,
+    )>,
     mineable_query: Query<MineableBody, Without<Character>>,
     mut map_query: Query<&mut Map>,
     mut map_spawns_query: Query<&mut MapSpawns>,
@@ -64,7 +83,7 @@ pub fn do_mining_work(
         return;
     };
     for character_bundle in query.iter_mut() {
-        let (mut mine_task, mut transform, _, entity) = character_bundle;
+        let (mut mine_task, mut transform, _, entity, miner, manual_assignment) = character_bundle;
         // TODO: I need to spawn rocks and they can be... rockables? RockProviders?
         // Unsure exactly but they will let characters pick up rocks so they can be
         // stockpiled, and eventually used for building.
@@ -96,10 +115,12 @@ pub fn do_mining_work(
         }
 
         if mine_task.is_complete() {
-            commands
-                .entity(entity)
-                .remove::<MineTask>()
-                .remove::<Miner>();
+            let mut entity_commands = commands.entity(entity);
+            entity_commands.remove::<MineTask>();
+
+            if miner.is_automatically_assigned() || manual_assignment.will_reassign() {
+                entity_commands.remove::<Miner>();
+            }
         }
     }
 }
@@ -111,11 +132,14 @@ pub fn do_clear_exploration_work(
         &mut Transform,
         &mut ClearExplorationTargetTask,
         Entity,
+        &Explorer,
+        &ManualAssignment,
     )>,
     mut event_writer: EventWriter<PointVisited>,
 ) {
     for character_bundle in query.iter_mut() {
-        let (_, mut transform, mut clear_expliration_target, entity) = character_bundle;
+        let (_, mut transform, mut clear_expliration_target, entity, explorer, manual_assignment) =
+            character_bundle;
 
         if clear_expliration_target.target.path_incomplete() {
             // TODO: I might want to switch up how I'm using the exploration history.
@@ -132,10 +156,12 @@ pub fn do_clear_exploration_work(
         }
 
         if clear_expliration_target.is_complete() {
-            commands
-                .entity(entity)
-                .remove::<Explorer>()
-                .remove::<ClearExplorationTargetTask>();
+            let mut entity_commands = commands.entity(entity);
+            entity_commands.remove::<ClearExplorationTargetTask>();
+
+            if explorer.is_automatically_assigned() || manual_assignment.will_reassign() {
+                entity_commands.remove::<Explorer>();
+            }
         }
     }
 }
@@ -147,12 +173,14 @@ pub fn do_setup_storage_work(
         &mut Transform,
         &mut SetupStorageAreaTask,
         Entity,
+        &Builder,
+        &ManualAssignment,
     )>,
     mut structure_spawns_query: Query<&mut StructureSpawns>,
     mut event_writer: EventWriter<PointVisited>,
 ) {
     for character_bundle in query.iter_mut() {
-        let (_, mut transform, mut task, entity) = character_bundle;
+        let (_, mut transform, mut task, entity, builder, manual_assignment) = character_bundle;
 
         if task.setup_area.path_incomplete() {
             utils::movement::visit_next_point(
@@ -178,10 +206,12 @@ pub fn do_setup_storage_work(
         }
 
         if task.is_complete() {
-            commands
-                .entity(entity)
-                .remove::<SetupStorageAreaTask>()
-                .remove::<Builder>();
+            let mut entity_commands = commands.entity(entity);
+            entity_commands.remove::<SetupStorageAreaTask>();
+
+            if builder.is_automatically_assigned() || manual_assignment.will_reassign() {
+                entity_commands.remove::<Builder>();
+            }
         }
     }
 }

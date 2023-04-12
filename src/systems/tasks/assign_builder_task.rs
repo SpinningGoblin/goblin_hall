@@ -1,9 +1,9 @@
-use bevy::prelude::{Commands, Entity, Query, Transform, With};
+use bevy::prelude::{Commands, Entity, Query, Transform};
 
 use crate::{
     components::{
         characters::Character,
-        jobs::Builder,
+        jobs::{Builder, Job, ManualAssignment},
         movement::{Path, VisitedPoint},
         structures::GridBody,
         tasks::{SetupStorageArea, SetupStorageAreaTask, WithoutTask},
@@ -14,13 +14,17 @@ use crate::{
     utils::movement::path_to_point,
 };
 
-type CharacterWithTransform = (&'static Character, Entity, &'static Transform);
-
-type BuilderWithoutTask = (With<Builder>, WithoutTask);
+type BuilderWithTransform = (
+    &'static Character,
+    Entity,
+    &'static Transform,
+    &'static Builder,
+    &'static ManualAssignment,
+);
 
 pub fn assign_builder_task(
     mut commands: Commands,
-    query: Query<CharacterWithTransform, BuilderWithoutTask>,
+    query: Query<BuilderWithTransform, WithoutTask>,
     mut setup_storage_zone_query: Query<(&mut SetupStorageAreaZone, &GridBody, Entity)>,
     map_query: Query<&Map>,
 ) {
@@ -31,7 +35,7 @@ pub fn assign_builder_task(
     let mut used_zones: Vec<Entity> = Vec::new();
 
     for character_bundle in query.iter() {
-        let (character, entity, transform) = character_bundle;
+        let (character, entity, transform, builder, manual_assignment) = character_bundle;
         let character_coordinate = grid_coordinate_from_world(
             &transform.translation.truncate(),
             map.grid_size,
@@ -45,15 +49,18 @@ pub fn assign_builder_task(
             .filter(|(setup_zone, _, entity)| !setup_zone.targeted && !used_zones.contains(entity))
             .min_by_key(|(_, body, _)| body.center_coordinate.distance(&visibility_box.center));
 
+        let mut entity_commands = commands.entity(entity);
         if let Some((mut zone, body, setup_entity)) = possible_setup_zone {
             let possible_task = build_task(map, &visibility_box, body, setup_entity);
             if let Some(task) = possible_task {
                 zone.targeted = true;
                 used_zones.push(setup_entity);
-                commands.entity(entity).insert(task);
+                entity_commands.insert(task);
+            } else if builder.is_automatically_assigned() {
+                entity_commands.remove::<Builder>();
             }
-        } else {
-            commands.entity(entity).remove::<Builder>();
+        } else if builder.is_automatically_assigned() || manual_assignment.will_reassign() {
+            entity_commands.remove::<Builder>();
         }
     }
 }
