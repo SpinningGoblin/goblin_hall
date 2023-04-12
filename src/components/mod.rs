@@ -18,4 +18,4 @@ pub use spawns::{
     CharacterSpawnable, CharacterSpawns, MapSpawns, SpawnCoordinate, StructureSpawnType,
     StructureSpawnable, StructureSpawns, TdlgSpawnable, ZoneSpawnable,
 };
-pub use world::World;
+pub use world::{World, WorldTickCalculation};
