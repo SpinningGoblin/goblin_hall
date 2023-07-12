@@ -1,6 +1,6 @@
-use bevy::prelude::Vec2;
+use bevy::prelude::{Event, Vec2};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Event)]
 pub struct PointVisited {
     pub point: Vec2,
 }

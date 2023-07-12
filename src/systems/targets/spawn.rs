@@ -16,6 +16,7 @@ pub fn spawn(
 ) {
     let explore_config = game_config.zone_config("exploration").unwrap();
     let target_handle = asset_server.get_handle(&explore_config.target.path);
+
     let target_index = atlas
         .texture_atlas
         .get_texture_index(&target_handle)

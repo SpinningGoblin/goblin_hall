@@ -1,7 +1,7 @@
 use bevy::{
     prelude::{
-        App, ImagePlugin, IntoSystemAppConfig, IntoSystemAppConfigs, IntoSystemConfig,
-        IntoSystemConfigs, IntoSystemSetConfig, OnEnter, OnExit, OnUpdate, PluginGroup,
+        in_state, App, ImagePlugin, IntoSystemConfigs, IntoSystemSetConfig, OnEnter, OnExit,
+        PluginGroup, Update,
     },
     window::close_on_esc,
     DefaultPlugins,
@@ -29,9 +29,9 @@ fn main() {
         .insert_resource(game_config)
         .add_event::<PointVisited>()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
-        .configure_set(Sets::CharacterJobs.after(Sets::Tick))
-        .configure_set(Sets::Finishing.after(Sets::CharacterJobs))
-        .configure_set(Sets::InputResponse.after(Sets::Input));
+        .configure_set(Update, Sets::CharacterJobs.after(Sets::Tick))
+        .configure_set(Update, Sets::Finishing.after(Sets::CharacterJobs))
+        .configure_set(Update, Sets::InputResponse.after(Sets::Input));
 
     let input_set = (
         systems::camera::process_movement_input,
@@ -41,7 +41,7 @@ fn main() {
         systems::jobs::swap_job_assignment_mode,
         systems::world::pause_world_tick,
     )
-        .in_set(OnUpdate(AppState::InGame))
+        .run_if(in_state(AppState::InGame))
         .in_set(Sets::Input);
 
     let input_responses = (
@@ -49,13 +49,11 @@ fn main() {
         systems::camera::move_camera,
         systems::jobs::manually_assign_job,
     )
-        .in_set(OnUpdate(AppState::InGame))
         .after(Sets::Input)
+        .run_if(in_state(AppState::InGame))
         .in_set(Sets::InputResponse);
 
-    let tick_set = (systems::world::tick_game_world)
-        .in_set(OnUpdate(AppState::InGame))
-        .in_set(Sets::Tick);
+    let tick_set = (systems::world::tick_game_world).in_set(Sets::Tick);
 
     let assign_job_set = (
         systems::jobs::assign_miner_priority,
@@ -69,8 +67,8 @@ fn main() {
             .after(systems::jobs::assign_gatherer_priority),
     )
         .in_set(Sets::CharacterJobs)
-        .after(Sets::InputResponse)
-        .in_set(OnUpdate(AppState::InGame));
+        .run_if(in_state(AppState::InGame))
+        .after(Sets::InputResponse);
 
     let character_job_set = (
         systems::tasks::assign_explorer_task,
@@ -85,8 +83,8 @@ fn main() {
         systems::tasks::do_empty_resources_work.run_if(systems::world::tick_just_finished),
     )
         .in_set(Sets::CharacterTasks)
-        .after(Sets::CharacterJobs)
-        .in_set(OnUpdate(AppState::InGame));
+        .run_if(in_state(AppState::InGame))
+        .after(Sets::CharacterJobs);
 
     let finishing_set = (
         systems::characters::show_in_visible_area,
@@ -98,8 +96,8 @@ fn main() {
             .after(systems::spawns::characters)
             .after(systems::spawns::map),
     )
-        .in_set(OnUpdate(AppState::InGame))
         .after(Sets::CharacterTasks)
+        .run_if(in_state(AppState::InGame))
         .in_set(Sets::Finishing);
 
     let starting_spawns = (
@@ -107,24 +105,25 @@ fn main() {
         systems::init::spawn_starting,
         systems::camera::spawn_camera,
     )
-        .after(StartupSets::TextureAtlas)
-        .in_schedule(OnEnter(AppState::InGame));
+        .after(StartupSets::TextureAtlas);
 
     app.add_state::<AppState>()
-        .add_system(close_on_esc)
-        .add_systems(input_set)
-        .add_systems(input_responses)
-        .add_system(tick_set)
-        .add_systems(assign_job_set)
-        .add_systems(character_job_set)
-        .add_systems(finishing_set)
-        .add_system(textures::load.in_schedule(OnEnter(AppState::Startup)))
-        .add_system(textures::check.in_set(OnUpdate(AppState::Startup)))
-        .add_system(
-            textures::finalize_texture_atlas
-                .in_schedule(OnExit(AppState::Startup))
-                .in_set(StartupSets::TextureAtlas),
+        .add_systems(Update, close_on_esc)
+        .add_systems(Update, input_set)
+        .add_systems(Update, input_responses)
+        .add_systems(Update, tick_set)
+        .add_systems(Update, assign_job_set)
+        .add_systems(Update, character_job_set)
+        .add_systems(Update, finishing_set)
+        .add_systems(OnEnter(AppState::Startup), textures::load)
+        .add_systems(Update, textures::check.run_if(in_state(AppState::Startup)))
+        .add_systems(
+            OnExit(AppState::Startup),
+            textures::finalize_texture_atlas.in_set(StartupSets::TextureAtlas),
         )
-        .add_systems(starting_spawns)
+        .add_systems(
+            OnEnter(AppState::InGame),
+            starting_spawns.after(StartupSets::TextureAtlas),
+        )
         .run();
 }
