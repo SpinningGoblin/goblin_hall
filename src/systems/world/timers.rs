@@ -11,7 +11,10 @@ pub fn tick_game_world(
     mut world_query: Query<&mut World>,
     world_calculation_query: Query<&WorldTickCalculation>,
 ) {
-    let (Ok(mut world), Ok(world_calculation)) = (world_query.get_single_mut(), world_calculation_query.get_single()) else {
+    let (Ok(mut world), Ok(world_calculation)) = (
+        world_query.get_single_mut(),
+        world_calculation_query.get_single(),
+    ) else {
         return;
     };
 

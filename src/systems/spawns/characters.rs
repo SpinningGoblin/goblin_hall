@@ -23,7 +23,9 @@ pub fn characters(
     game_config: Res<GameConfiguration>,
     map_query: Query<&Map>,
 ) {
-    let (Ok(character_spawns), Ok(map)) = (character_spawns_query.get_single(), map_query.get_single()) else {
+    let (Ok(character_spawns), Ok(map)) =
+        (character_spawns_query.get_single(), map_query.get_single())
+    else {
         return;
     };
 

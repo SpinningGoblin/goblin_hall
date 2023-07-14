@@ -37,7 +37,9 @@ pub fn assign_explorer_task(
     mut exploration_zone_query: Query<(&mut ExplorationZone, &GridBody, Entity)>,
     map_query: Query<&Map>,
 ) {
-    let (Ok(map), Ok(exploration_history)) = (map_query.get_single(), explore_history_query.get_single()) else {
+    let (Ok(map), Ok(exploration_history)) =
+        (map_query.get_single(), explore_history_query.get_single())
+    else {
         return;
     };
 

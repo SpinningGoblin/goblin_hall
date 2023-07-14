@@ -22,7 +22,9 @@ pub fn structures(
     game_config: Res<GameConfiguration>,
     map_query: Query<&Map>,
 ) {
-    let (Ok(structure_spawns), Ok(map)) = (structure_spawns_query.get_single(), map_query.get_single()) else {
+    let (Ok(structure_spawns), Ok(map)) =
+        (structure_spawns_query.get_single(), map_query.get_single())
+    else {
         return;
     };
 
